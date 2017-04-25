@@ -41,15 +41,15 @@
 
 namespace tango_augmented_reality {
 
-// Scene provides OpenGL drawable objects and renders them for visualization.
-class Scene {
+// AugmentedRealityScene provides OpenGL drawable objects and renders them for visualization.
+class AugmentedRealityScene {
  public:
   // Constructor and destructor.
-  Scene();
-  ~Scene();
+  AugmentedRealityScene();
+  ~AugmentedRealityScene();
 
   // Allocate OpenGL resources for rendering.
-  void InitGLContent(AAssetManager* aasset_manager);
+  void InitGLContent();
 
   // Release non-OpenGL resources.
   void DeleteResources();
@@ -92,16 +92,10 @@ class Scene {
   // @param: projection_matrix, the projection matrix.
   void SetProjectionMatrix(const glm::mat4& projection_matrix);
 
-  // Apply a Y axis rotate transform to object
-  void RotateYAxisForTimestamp(double timestamp, tango_gl::Transform* transform,
-                               double* last_angle, double* last_timestamp);
-
   // Set video overlay's orientation based on current device orientation.
   void SetVideoOverlayRotation(int display_rotation);
 
   void UpdateFrustum(glm::vec3 pos, float zoom);
-  void AddDynamicMesh(SingleDynamicMesh* mesh);
-  void ClearDynamicMeshes();
 
   // Camera object that allows user to use touch input to interact with.
   tango_gl::Camera* camera_;
@@ -112,6 +106,7 @@ class Scene {
   std::vector<SingleDynamicMesh*> dynamic_meshes_;
   tango_gl::Material* color_vertex_shader;
   tango_gl::Material* textured_shader;
+  tango_gl::Transform object_transform;
 
 private:
   // Video overlay drawable object to display the camera image.

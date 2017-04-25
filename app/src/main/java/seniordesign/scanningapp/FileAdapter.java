@@ -56,6 +56,15 @@ public class FileAdapter extends BaseAdapter {
                 mContext.startActivity(intent);
             }
         });
+        view.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View view) {
+                Intent intent = new Intent(mContext, ViewerActivity.class);
+                intent.putExtra(FileActivity.FILE_NAME_KEY, fileNames.get(i));
+                mContext.startActivity(intent);
+                return true;
+            }
+        });
 
         return view;
     }

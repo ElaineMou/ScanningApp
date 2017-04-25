@@ -24,13 +24,15 @@ LOCAL_STATIC_LIBRARIES := png
 LOCAL_CFLAGS    := -std=c++11
 
 LOCAL_SRC_FILES := augmented_reality_app.cc \
+                   augmented_reality_scene.cc \
                    jni_interface.cc \
                    mask_processor.cc \
                    model_io.cc \
-                   scene.cc \
                    tango_event_data.cc \
                    texture_processor.cc \
                    vertex_processor.cc \
+                   viewer_app.cc \
+                   viewer_scene.cc \
                    $(PROJECT_ROOT_FROM_JNI)/tango_gl/bounding_box.cc \
                    $(PROJECT_ROOT_FROM_JNI)/tango_gl/camera.cc \
                    $(PROJECT_ROOT_FROM_JNI)/tango_gl/conversions.cc \
@@ -51,13 +53,15 @@ LOCAL_C_INCLUDES := $(PROJECT_ROOT)/tango_gl/include \
                     $(PROJECT_ROOT)/third_party/libpng/include/ \
                     $(PROJECT_ROOT)/tango_3d_reconstruction/include/ \
                     tango-augmented-reality/augmented_reality_app.h \
+                    tango-augmented-reality/augmented_reality_scene.h \
                     tango-augmented-reality/mask_processor.h \
                     tango-augmented-reality/math_utils.h \
                     tango-augmented-reality/model_io.h \
-                    tango-augmented-reality/scene.h \
                     tango-augmented-reality/tango_event_data.h \
                     tango-augmented-reality/texture_processor.h \
-                    tango-augmented-reality/vertex_processor.h
+                    tango-augmented-reality/vertex_processor.h \
+                    tango-augmented-reality/viewer_app.h \
+                    tango-augmented-reality/viewer_scene.h
 
 LOCAL_LDLIBS    := -llog -lGLESv2 -L$(SYSROOT)/usr/lib -lz -landroid
 include $(BUILD_SHARED_LIBRARY)

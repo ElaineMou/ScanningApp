@@ -30,13 +30,17 @@ add_library( # Sets the name of the library.
              # Associated headers in the same location as their source
              # file are automatically included.
              src/main/jni/tango-augmented-reality/augmented_reality_app.h
-             src/main/jni/tango-augmented-reality/scene.h
+             src/main/jni/tango-augmented-reality/augmented_reality_scene.h
              src/main/jni/tango-augmented-reality/tango_event_data.h
+             src/main/jni/tango-augmented-reality/viewer_app.h
+             src/main/jni/tango-augmented-reality/viewer_scene.h
              src/main/jni/Android.mk
              src/main/jni/Application.mk
              src/main/jni/augmented_reality_app.cc
              src/main/jni/jni_interface.cc
-             src/main/jni/scene.cc
+             src/main/jni/augmented_reality_scene.cc
+             src/main/jni/viewer_app.cc
+             src/main/jni/viewer_scene.cc
              src/main/jni/tango_event_data.cc)
 
 # Searches for a specified prebuilt library and stores the path as a

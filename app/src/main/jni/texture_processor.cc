@@ -369,7 +369,7 @@ namespace tango_augmented_reality {
         png_uint_32 width, height;
         png_get_IHDR(png_ptr, info_ptr, &width, &height, &bit_depth, &color_type, &interlace_type, NULL, NULL);
 
-        /// load PNG
+        /// loadAugmentedReality PNG
         png_size_t row_bytes = png_get_rowbytes(png_ptr, info_ptr);
         texture.data = new unsigned char[row_bytes * height];
         png_bytepp row_pointers = png_get_rows(png_ptr, info_ptr);

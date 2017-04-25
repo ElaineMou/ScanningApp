@@ -21,8 +21,10 @@
 
 #include <jni.h>
 #include <tango-augmented-reality/augmented_reality_app.h>
+#include <tango-augmented-reality/viewer_app.h>
 
-static tango_augmented_reality::AugmentedRealityApp app;
+static tango_augmented_reality::AugmentedRealityApp augmentedRealityApp;
+static tango_augmented_reality::ViewerApp viewerApp;
 
 std::string jstring2string(JNIEnv* env, jstring name)
 {
@@ -38,65 +40,154 @@ extern "C" {
 jint JNI_OnLoad(JavaVM* vm, void*) {
   // We need to store a reference to the Java VM so that we can call into the
   // Java layer to trigger rendering.
-  app.SetJavaVM(vm);
+  augmentedRealityApp.SetJavaVM(vm);
   return JNI_VERSION_1_6;
 }
 
 JNIEXPORT void JNICALL
-Java_seniordesign_scanningapp_TangoJNINative_onCreate(
+Java_seniordesign_scanningapp_TangoJNINative_onCreateAugmentedReality(
     JNIEnv* env, jobject, jobject activity, int display_orientation) {
-  app.OnCreate(env, activity, display_orientation);
+  augmentedRealityApp.OnCreate(env, activity, display_orientation);
 }
 
 JNIEXPORT void JNICALL
-Java_seniordesign_scanningapp_TangoJNINative_onTangoServiceConnected(
+Java_seniordesign_scanningapp_TangoJNINative_onTangoServiceConnectedAugmentedReality(
     JNIEnv* env, jobject, jobject iBinder, jdouble res, jdouble dmin, jdouble dmax,
     jint noise, jboolean land, jboolean photo, bool textures) {
-  app.OnTangoServiceConnected(env, iBinder, res, dmin, dmax, noise, land, textures);
+  augmentedRealityApp.OnTangoServiceConnected(env, iBinder, res, dmin, dmax, noise, land, textures);
 }
 
 JNIEXPORT void JNICALL
-Java_seniordesign_scanningapp_TangoJNINative_onPause(
+Java_seniordesign_scanningapp_TangoJNINative_onPauseAugmentedReality(
     JNIEnv*, jobject) {
-  app.OnPause();
+  augmentedRealityApp.OnPause();
 }
 
 JNIEXPORT void JNICALL
-Java_seniordesign_scanningapp_TangoJNINative_onDestroy(
+Java_seniordesign_scanningapp_TangoJNINative_onDestroyAugmentedReality(
     JNIEnv*, jobject) {
-  app.OnDestroy();
+    augmentedRealityApp.OnDestroy();
 }
 
 JNIEXPORT void JNICALL
-Java_seniordesign_scanningapp_TangoJNINative_onGlSurfaceCreated(
+Java_seniordesign_scanningapp_TangoJNINative_onGlSurfaceCreatedAugmentedReality(
     JNIEnv* env, jobject, jobject j_asset_manager) {
   AAssetManager* aasset_manager = AAssetManager_fromJava(env, j_asset_manager);
-  app.OnSurfaceCreated(aasset_manager);
+  augmentedRealityApp.OnSurfaceCreated();
 }
 
 JNIEXPORT void JNICALL
-Java_seniordesign_scanningapp_TangoJNINative_onGlSurfaceChanged(
+Java_seniordesign_scanningapp_TangoJNINative_onGlSurfaceChangedAugmentedReality(
     JNIEnv*, jobject, jint width, jint height) {
-  app.OnSurfaceChanged(width, height);
+  augmentedRealityApp.OnSurfaceChanged(width, height);
 }
 
 JNIEXPORT void JNICALL
-Java_seniordesign_scanningapp_TangoJNINative_onGlSurfaceDrawFrame(
+Java_seniordesign_scanningapp_TangoJNINative_onGlSurfaceDrawFrameAugmentedReality(
     JNIEnv*, jobject) {
-  app.OnDrawFrame();
+  augmentedRealityApp.OnDrawFrame();
 }
 
 JNIEXPORT void JNICALL
-Java_seniordesign_scanningapp_TangoJNINative_onConfigurationChanged(
+Java_seniordesign_scanningapp_TangoJNINative_onConfigurationChangedAugmentedReality(
     JNIEnv*, jobject, int display_orientation) {
-  app.OnDeviceRotationChanged(display_orientation);
+  augmentedRealityApp.OnDeviceRotationChanged(display_orientation);
 }
 
 JNIEXPORT void JNICALL
-Java_seniordesign_scanningapp_TangoJNINative_load(JNIEnv* env, jobject, jstring name) {
-  app.Load(jstring2string(env,name));
+Java_seniordesign_scanningapp_TangoJNINative_loadAugmentedReality(JNIEnv* env, jobject, jstring name) {
+  augmentedRealityApp.Load(jstring2string(env,name));
 }
 
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_TangoJNINative_setViewAugmentedReality(JNIEnv *env, jclass type,
+                                                                     jfloat mYaw, jfloat mPitch,
+                                                                     jfloat mRoll, jfloat mMoveX,
+                                                                     jfloat mMoveY, jfloat mMoveZ) {
+
+  augmentedRealityApp.SetView(mPitch,mYaw,mRoll,mMoveX,mMoveY,mMoveZ,false);
+
+}
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_TangoJNINative_setZoomAugmentedReality(JNIEnv *env, jclass type,
+                                                                     jfloat mZoom) {
+
+  augmentedRealityApp.SetZoom(mZoom);
+}
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_TangoJNINative_onCreateViewer(
+        JNIEnv* env, jobject, jobject activity, int display_orientation) {
+  viewerApp.OnCreate(env,activity,display_orientation);
+}
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_TangoJNINative_onTangoServiceConnectedViewer(
+        JNIEnv* env, jobject, jobject iBinder, jdouble res, jdouble dmin, jdouble dmax,
+        jint noise, jboolean land, jboolean photo, bool textures) {
+  viewerApp.OnTangoServiceConnected(env, iBinder, res, dmin, dmax, noise, land, textures);
+}
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_TangoJNINative_onPauseViewer(JNIEnv *env, jclass type) {
+  viewerApp.OnPause();
+}
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_TangoJNINative_onDestroyViewer(JNIEnv *env, jclass type) {
+  viewerApp.OnDestroy();
+}
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_TangoJNINative_onGlSurfaceCreatedViewer(JNIEnv *env, jclass type,
+                                                                      jobject assetManager) {
+
+  viewerApp.SetAAssetManager(AAssetManager_fromJava(env, assetManager));
+  viewerApp.OnSurfaceCreated();
+}
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_TangoJNINative_onGlSurfaceChangedViewer(JNIEnv *env, jobject,
+                                                                      jint width, jint height) {
+  viewerApp.OnSurfaceChanged(width,height);
+}
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_TangoJNINative_onGlSurfaceDrawFrameViewer(JNIEnv *env, jobject) {
+  viewerApp.OnDrawFrame();
+}
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_TangoJNINative_onConfigurationChangedViewer(JNIEnv *env, jclass type,
+                                                                          jint displayOrientation) {
+  viewerApp.OnDeviceRotationChanged(displayOrientation);
+}
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_TangoJNINative_loadViewer(JNIEnv *env, jclass type,
+                                                        jstring fileName_) {
+  viewerApp.Load(jstring2string(env,fileName_));
+}
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_TangoJNINative_setViewViewer(JNIEnv *env, jclass type, jfloat yaw,
+                                                     jfloat pitch, jfloat roll, jfloat moveX,
+                                                     jfloat moveY, jfloat moveZ) {
+    viewerApp.SetView(pitch,yaw,roll,moveX,moveY,moveZ,false);
+}
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_TangoJNINative_setZoomViewer(JNIEnv *env, jclass type, jfloat zoom) {
+    viewerApp.SetZoom(zoom);
+}
+
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_TangoJNINative_addBallViewer(JNIEnv *env, jclass type, jfloat x, jfloat y) {
+
+    viewerApp.AddBall(x,y);
+}
 #ifdef __cplusplus
 }
 #endif

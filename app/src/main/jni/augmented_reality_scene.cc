@@ -22,7 +22,7 @@
 #include <tango-gl/shaders.h>
 #include <tango-gl/meshes.h>
 
-#include "tango-augmented-reality/scene.h"
+#include "tango-augmented-reality/augmented_reality_scene.h"
 
 namespace {
 // We want to represent the device properly with respect to the ground so we'll
@@ -38,11 +38,11 @@ const glm::vec3 kFrustumScale = glm::vec3(0.4f, 0.3f, 0.5f);
 
 namespace tango_augmented_reality {
 
-Scene::Scene() {}
+AugmentedRealityScene::AugmentedRealityScene() {}
 
-Scene::~Scene() {}
+AugmentedRealityScene::~AugmentedRealityScene() {}
 
-void Scene::InitGLContent(AAssetManager* aasset_manager) {
+void AugmentedRealityScene::InitGLContent() {
   glEnable(GL_CULL_FACE);
   glCullFace(GL_BACK);
 
@@ -58,10 +58,11 @@ void Scene::InitGLContent(AAssetManager* aasset_manager) {
   textured_shader->SetShader(tango_gl::shaders::GetTexturedVertexShader().c_str(),
                              tango_gl::shaders::GetTexturedFragmentShader().c_str());
 
+  object_transform.SetPosition(glm::vec3(0.0f, 0.0f, -5.0f));
   is_content_initialized_ = true;
 }
 
-void Scene::DeleteResources() {
+void AugmentedRealityScene::DeleteResources() {
   if (is_content_initialized_) {
     delete camera_;
     camera_ = nullptr;
@@ -73,11 +74,13 @@ void Scene::DeleteResources() {
     delete textured_shader;
     textured_shader = nullptr;
 
+    static_meshes_.clear();
+
     is_content_initialized_ = false;
   }
 }
 
-void Scene::SetupViewport(int w, int h) {
+void AugmentedRealityScene::SetupViewport(int w, int h) {
   if (h <= 0 || w <= 0) {
     LOGE("Setup graphic height not valid");
     return;
@@ -90,17 +93,17 @@ void Scene::SetupViewport(int w, int h) {
   glViewport(0, 0, w, h);
 }
 
-void Scene::SetProjectionMatrix(const glm::mat4& projection_matrix) {
+void AugmentedRealityScene::SetProjectionMatrix(const glm::mat4& projection_matrix) {
   camera_->SetProjectionMatrix(projection_matrix);
 }
 
-void Scene::Clear() {
+void AugmentedRealityScene::Clear() {
   glViewport(0, 0, viewport_width_, viewport_height_);
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 }
 
-void Scene::Render(bool frustum, const glm::mat4& cur_pose_transformation) {
+void AugmentedRealityScene::Render(bool frustum, const glm::mat4& cur_pose_transformation) {
   glViewport(0, 0, viewport_width_, viewport_height_);
 
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -118,23 +121,23 @@ void Scene::Render(bool frustum, const glm::mat4& cur_pose_transformation) {
   unsigned int lastTexture = INT_MAX;
   for (tango_gl::StaticMesh mesh : static_meshes_) {
     if (mesh.texture == -1)
-      tango_gl::Render(mesh, *color_vertex_shader, tango_gl::Transform(), *camera_, -1);
+      tango_gl::Render(mesh, *color_vertex_shader, object_transform, *camera_, -1);
     else {
       unsigned int texture = textureMap[mesh.texture];
       if (lastTexture != texture) {
         lastTexture = texture;
         glBindTexture(GL_TEXTURE_2D, texture);
       }
-      tango_gl::Render(mesh, *textured_shader, tango_gl::Transform(), *camera_, -1);
+      tango_gl::Render(mesh, *textured_shader, object_transform, *camera_, -1);
     }
   }
   if (!frustum_.vertices.empty() && frustum) {
-    tango_gl::Render(frustum_, *color_vertex_shader, tango_gl::Transform(), *camera_,
+    tango_gl::Render(frustum_, *color_vertex_shader, object_transform, *camera_,
                      (const int) frustum_.indices.size());
   }
 }
 
-void Scene::RotateYAxisForTimestamp(double timestamp,
+/*void AugmentedRealityScene::RotateYAxisForTimestamp(double timestamp,
                                     tango_gl::Transform* transform,
                                     double* last_angle,
                                     double* last_timestamp) {
@@ -154,16 +157,16 @@ void Scene::RotateYAxisForTimestamp(double timestamp,
     transform->SetRotation(glm::quat(w, 0.0f, y, 0.0f));
   }
   *last_timestamp = timestamp;
-}
+}*/
 
-void Scene::SetVideoOverlayRotation(int display_rotation) {
+void AugmentedRealityScene::SetVideoOverlayRotation(int display_rotation) {
   if (is_content_initialized_) {
     video_overlay_->SetDisplayRotation(
         static_cast<TangoSupportRotation>(display_rotation));
   }
 }
 
-void Scene::UpdateFrustum(glm::vec3 pos, float zoom) {
+void AugmentedRealityScene::UpdateFrustum(glm::vec3 pos, float zoom) {
   if(frustum_.colors.empty()) {
     frustum_.render_mode = GL_TRIANGLES;
     frustum_.colors.push_back(0xFFFFFF00);
@@ -200,18 +203,6 @@ void Scene::UpdateFrustum(glm::vec3 pos, float zoom) {
   frustum_.vertices.push_back(pos + glm::vec3(0, 0, -f));
   frustum_.vertices.push_back(pos + glm::vec3(0, f, 0));
   frustum_.vertices.push_back(pos + glm::vec3(0, -f, 0));
-}
-
-void Scene::AddDynamicMesh(SingleDynamicMesh *mesh) {
-  dynamic_meshes_.push_back(mesh);
-}
-
-void Scene::ClearDynamicMeshes() {
-  for (unsigned int i = 0; i < dynamic_meshes_.size(); i++) {
-    delete dynamic_meshes_[i];
-  }
-  dynamic_meshes_.clear();
-  textureMap.clear();
 }
 
 }  // namespace tango_augmented_reality

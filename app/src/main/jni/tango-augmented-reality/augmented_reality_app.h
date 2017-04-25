@@ -32,10 +32,9 @@
 #include <tango-gl/util.h>
 #include <tango-gl/tango-gl.h>
 
-#include <tango-augmented-reality/scene.h>
+#include <tango-augmented-reality/augmented_reality_scene.h>
 #include <tango-augmented-reality/tango_event_data.h>
 #include <tango-augmented-reality/texture_processor.h>
-#include "texture_processor.h"
 
 
 namespace tango_augmented_reality {
@@ -87,7 +86,7 @@ class AugmentedRealityApp {
 
   // When the Android activity is destroyed signal the JNI layer to
   // remove references to the activity. This should be called from the
-  // onDestroy() callback of the parent activity lifecycle.
+  // onDestroyAugmentedReality() callback of the parent activity lifecycle.
   void OnDestroy();
 
   // Tango service event callback function for pose data. Called when new events
@@ -101,8 +100,8 @@ class AugmentedRealityApp {
   // @param id: camera Id of the updated camera.
   void onTextureAvailable(TangoCameraId id);
 
-  // Allocate OpenGL resources for rendering, mainly initializing the Scene.
-  void OnSurfaceCreated(AAssetManager* aasset_manager);
+  // Allocate OpenGL resources for rendering, mainly initializing the AugmentedRealityScene.
+  void OnSurfaceCreated();
 
   // Setup the view port width and height.
   void OnSurfaceChanged(int width, int height);
@@ -129,17 +128,22 @@ class AugmentedRealityApp {
   // @JavaVM display_rotation: orientation of current display.
   void OnDeviceRotationChanged(int display_rotation);
 
-  void onPointCloudAvailable(TangoPointCloud *point_cloud);
-  void onFrameAvailable(TangoCameraId id, const TangoImageBuffer *buffer);
-  void OnSurfaceCreated();
+  //void onPointCloudAvailable(TangoPointCloud *point_cloud);
+  //void onFrameAvailable(TangoCameraId id, const TangoImageBuffer *buffer);
+  //void OnSurfaceCreated();
   void OnToggleButtonClicked(bool t3dr_is_running);
-  void OnClearButtonClicked();
+  //void OnClearButtonClicked();
   void Load(std::string filename);
-  void Save(std::string filename);
+  //void Save(std::string filename);
   float CenterOfStaticModel(bool horizontal);
-  void SetView(float p, float y, float mx, float my, bool g) { pitch = p; yaw = y; gyro = g;
-    movex = mx; movey = my;}
-  void SetZoom(float value) { zoom = value; }
+  void SetView(float p, float y, float r, float mx, float my, float mz, bool g) { pitch = p; yaw = y; gyro = g;
+    movex = mx; movey = my; movez = mz, roll = r;
+    main_scene_.object_transform.SetRotation(glm::quat(glm::vec3(yaw,pitch,roll)));
+    main_scene_.object_transform.SetPosition(glm::vec3(movex,movey,movez));}
+  void SetZoom(float value) {
+    zoom = value;
+    main_scene_.object_transform.SetScale(glm::vec3(zoom/10,zoom/10,zoom/10));
+  }
 
  private:
   // Request the render function from Java layer.
@@ -180,7 +184,7 @@ class AugmentedRealityApp {
   // prev_start_service_T_camera_, transform_counter_ and transform_string_ are
   // used for
   // composing the debug string to display the useful information on screen.
-  glm::mat4 prev_start_service_T_camera_;
+  //glm::mat4 prev_start_service_T_camera_;
 
   // Debug transform string.
   std::string transform_string_;
@@ -209,7 +213,7 @@ class AugmentedRealityApp {
 
   // main_scene_ includes all drawable object for visualizing Tango device's
   // movement.
-  Scene main_scene_;
+  AugmentedRealityScene main_scene_;
 
   // Tango configration file, this object is for configuring Tango Service setup
   // before connect to service. For example, we set the flag
@@ -242,32 +246,34 @@ class AugmentedRealityApp {
   int display_rotation_;
 
   Tango3DR_Context TangoSetup3DR(double res, double dmin, double dmax, int noise);
-  void MeshUpdate(Tango3DR_ImageBuffer t3dr_image, Tango3DR_GridIndexArray *t3dr_updated);
+  //void MeshUpdate(Tango3DR_ImageBuffer t3dr_image, Tango3DR_GridIndexArray *t3dr_updated);
 
   bool t3dr_is_running_;
-  Tango3DR_Context t3dr_context_;
+  //Tango3DR_Context t3dr_context_;
   Tango3DR_CameraCalibration t3dr_intrinsics_;
   Tango3DR_CameraCalibration t3dr_intrinsics_depth;
-  glm::mat4 image_matrix;
-  glm::quat image_rotation;
+  //glm::mat4 image_matrix;
+  //glm::quat image_rotation;
   std::mutex binder_mutex_;
   std::mutex render_mutex_;
 
-  TangoPointCloud* front_cloud_;
-  glm::mat4 point_cloud_matrix_;
+  //TangoPointCloud* front_cloud_;
+  //glm::mat4 point_cloud_matrix_;
 
   TextureProcessor* textureProcessor;
   std::vector<TextureProcessor*> toDelete;
-  std::unordered_map<GridIndex, SingleDynamicMesh*, GridIndexHasher> meshes_;
-  std::unordered_map<GridIndex, std::vector<SingleDynamicMesh*>, GridIndexHasher> polygonUsage;
+  //std::unordered_map<GridIndex, SingleDynamicMesh*, GridIndexHasher> meshes_;
+  //std::unordered_map<GridIndex, std::vector<SingleDynamicMesh*>, GridIndexHasher> polygonUsage;
   bool gyro;
   bool landscape;
   bool textured;
   float scale;
   float movex;
   float movey;
+  float movez;
   float pitch;
   float yaw;
+  float roll;
   float zoom;
 };
 }  // namespace tango_augmented_reality

@@ -16,7 +16,6 @@
 #include <sstream>
 #include <string>
 #include <map>
-#include <sstream>
 #include <glm/gtx/transform.hpp>
 
 #include <tango-gl/conversions.h>
@@ -153,7 +152,7 @@ void AugmentedRealityApp::OnTangoServiceConnected(JNIEnv* env, jobject iBinder, 
   UpdateViewportAndProjectionMatrix();
 
   binder_mutex_.lock();
-  t3dr_context_ = TangoSetup3DR(res, dmin, dmax, noise);
+  //t3dr_context_ = TangoSetup3DR(res, dmin, dmax, noise);
   binder_mutex_.unlock();
 }
 
@@ -247,7 +246,7 @@ void AugmentedRealityApp::TangoSetupConfig() {
   tango_core_version_string_ = tango_core_version;
 }
 
-Tango3DR_Context AugmentedRealityApp::TangoSetup3DR(double res, double dmin, double dmax,
+/*Tango3DR_Context AugmentedRealityApp::TangoSetup3DR(double res, double dmin, double dmax,
                                                     int noise) {
   Tango3DR_ConfigH t3dr_config = Tango3DR_Config_create(TANGO_3DR_CONFIG_CONTEXT);
   Tango3DR_Status t3dr_err;
@@ -282,7 +281,7 @@ Tango3DR_Context AugmentedRealityApp::TangoSetup3DR(double res, double dmin, dou
   Tango3DR_setColorCalibration(output, &t3dr_intrinsics_);
   Tango3DR_setDepthCalibration(output, &t3dr_intrinsics_depth);
   return output;
-}
+}*/
 
 void AugmentedRealityApp::TangoConnectCallbacks() {
   // Connect color camera texture.
@@ -374,9 +373,9 @@ void AugmentedRealityApp::TangoDisconnect() {
   TangoService_disconnect();
 }
 
-void AugmentedRealityApp::OnSurfaceCreated(AAssetManager* aasset_manager) {
+void AugmentedRealityApp::OnSurfaceCreated() {
   render_mutex_.lock();
-  main_scene_.InitGLContent(aasset_manager);
+  main_scene_.InitGLContent();
   is_gl_initialized_ = true;
   render_mutex_.unlock();
   UpdateViewportAndProjectionMatrix();
@@ -463,14 +462,11 @@ void AugmentedRealityApp::OnDeviceRotationChanged(int display_rotation) {
 }
 
 void AugmentedRealityApp::OnDrawFrame() {
-  // If tracking is lost, further down in this method Scene::Render
+  // If tracking is lost, further down in this method AugmentedRealityScene::Render
   // will not be called. Prevent flickering that would otherwise
   // happen by rendering solid white as a fallback.
   main_scene_.Clear();
   //render_mutex_.lock();
-  for (TextureProcessor* i : toDelete)
-    delete i;
-  toDelete.clear();
 
   if (!is_gl_initialized_ || !is_service_connected_) {
     return;
@@ -572,7 +568,7 @@ void AugmentedRealityApp::RequestRender() {
 
 void AugmentedRealityApp::UpdateTransform(const double transform[16],
                                           double timestamp) {
-  prev_start_service_T_camera_ = cur_start_service_T_camera_;
+  //prev_start_service_T_camera_ = cur_start_service_T_camera_;
   cur_start_service_T_camera_ = glm::make_mat4(transform);
   // Increase pose counter.
   ++transform_counter_;

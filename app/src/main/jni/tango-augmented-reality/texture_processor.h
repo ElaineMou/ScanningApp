@@ -1,5 +1,5 @@
-#ifndef OPEN_CONSTRUCTOR_TEXTURE_PROCESSOR_H
-#define OPEN_CONSTRUCTOR_TEXTURE_PROCESSOR_H
+#ifndef TEXTURE_PROCESSOR_H
+#define TEXTURE_PROCESSOR_H
 
 #include <vector>
 #include <mutex>
