@@ -90,8 +90,11 @@ class ViewerApp {
         void OnDeviceRotationChanged(int display_rotation);
 
         void Load(std::string filename);
-        void AddBall(float x, float y);
+        void AddMarker(float x, float y);
         glm::vec3 CenterOfStaticModel();
+        glm::vec3 MaxesOfStaticModel();
+        glm::vec3 MinsOfStaticModel();
+        tango_gl::StaticMesh* MakeLineMesh(glm::vec3 start, glm::vec3 end);
         void Save(std::string filename);
         void SetView(float p, float y, float r, float mx, float my, float mz, bool g) { pitch = p; yaw = y; roll = r;
             movex = mx; movey = my; movez = mz;}
@@ -192,7 +195,6 @@ class ViewerApp {
         float yaw;
         float roll;
         float zoom;
-        float lastBall=0.0f;
 
     void TangoDisconnect();
 };

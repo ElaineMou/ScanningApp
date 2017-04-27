@@ -186,7 +186,7 @@ Java_seniordesign_scanningapp_TangoJNINative_setZoomViewer(JNIEnv *env, jclass t
 JNIEXPORT void JNICALL
 Java_seniordesign_scanningapp_TangoJNINative_addBallViewer(JNIEnv *env, jclass type, jfloat x, jfloat y) {
 
-    viewerApp.AddBall(x,y);
+    viewerApp.AddMarker(x, y);
 }
 #ifdef __cplusplus
 }

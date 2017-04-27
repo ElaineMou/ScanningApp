@@ -33,6 +33,7 @@ class Camera : public Transform {
 
   glm::mat4 GetViewMatrix() const;
   glm::mat4 GetProjectionMatrix() const;
+  float GetFov() const;
 
   /**
    * Create an OpenGL perspective matrix from window size, camera intrinsics,

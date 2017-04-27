@@ -37,6 +37,13 @@ namespace tango_augmented_reality {
         textured_shader = new tango_gl::Material();
         textured_shader->SetShader(tango_gl::shaders::GetTexturedVertexShader().c_str(),
                                    tango_gl::shaders::GetTexturedFragmentShader().c_str());
+        marker_material = new tango_gl::Material();
+        marker_texture = new tango_gl::Texture(aAssetManager, "block.png");
+
+        marker_material->SetShader(
+                tango_gl::shaders::GetTexturedVertexShader().c_str(),
+                tango_gl::shaders::GetTexturedFragmentShader().c_str());
+        marker_material->SetParam("texture", marker_texture);
     }
 
     void ViewerScene::DeleteResources() {
@@ -54,25 +61,25 @@ namespace tango_augmented_reality {
         }
         static_mesh_transforms_.clear();
 
-        for(std::vector<tango_gl::StaticMesh*>::iterator it = ball_meshes_.begin();it!=ball_meshes_.end();it++) {
+        for(std::vector<tango_gl::StaticMesh*>::iterator it = marker_meshes_.begin();it!=marker_meshes_.end();it++) {
             delete *it;
         }
-        ball_meshes_.clear();
+        marker_meshes_.clear();
 
-        for(std::vector<tango_gl::Transform*>::iterator it = ball_mesh_transforms_.begin();it!=ball_mesh_transforms_.end();it++) {
+        for(std::vector<tango_gl::Transform*>::iterator it = marker_mesh_transforms_.begin();it!=marker_mesh_transforms_.end();it++) {
             delete *it;
         }
-        ball_mesh_transforms_.clear();
+        marker_mesh_transforms_.clear();
 
-        for(std::vector<tango_gl::Material*>::iterator it = ball_mesh_materials_.begin();it!=ball_mesh_materials_.end();it++) {
+        for(std::vector<tango_gl::Material*>::iterator it = marker_mesh_materials_.begin();it!=marker_mesh_materials_.end();it++) {
             delete *it;
         }
-        ball_mesh_materials_.clear();
+        marker_mesh_materials_.clear();
 
-        for(std::vector<tango_gl::Texture*>::iterator it = ball_mesh_textures_.begin();it!=ball_mesh_textures_.end();it++) {
+        for(std::vector<tango_gl::Texture*>::iterator it = marker_mesh_textures_.begin();it!=marker_mesh_textures_.end();it++) {
             delete *it;
         }
-        ball_mesh_textures_.clear();
+        marker_mesh_textures_.clear();
         dynamic_meshes_.clear();
     }
 
@@ -106,17 +113,12 @@ namespace tango_augmented_reality {
                 tango_gl::Render(mesh, *textured_shader, *(static_mesh_transforms_.at(i)), *camera_, -1);
             }
         }
-        for (int i = 0; i < ball_meshes_.size(); i++) {
-            tango_gl::StaticMesh* mesh = ball_meshes_.at(i);
-            tango_gl::Transform *transform = ball_mesh_transforms_.at(i);
-            tango_gl::Material *material = ball_mesh_materials_.at(i);
-            tango_gl::Texture *texture = ball_mesh_textures_.at(i);
-            if(lastTexture!=texture->GetTextureID()) {
-                lastTexture = texture->GetTextureID();
-                glBindTexture(GL_TEXTURE_2D, texture->GetTextureID());
-            }
+        for (int i = 0; i < marker_meshes_.size(); i++) {
+            tango_gl::StaticMesh* mesh = marker_meshes_.at(i);
+            
+            tango_gl::Transform *transform = marker_mesh_transforms_.at(i);
 
-            tango_gl::Render(*mesh, *material, *transform, *camera_, -1);
+            tango_gl::Render(*mesh, *marker_material, *transform, *camera_, mesh->indices.size());
         }
         for (SingleDynamicMesh *mesh : dynamic_meshes_) {
             mesh->mutex.lock();

@@ -38,6 +38,8 @@ glm::mat4 Camera::GetViewMatrix() const {
 
 glm::mat4 Camera::GetProjectionMatrix() const { return projection_matrix_; }
 
+float Camera::GetFov() const {return field_of_view_;}
+
 void Camera::SetAspectRatio(float aspect_ratio) {
   aspect_ratio_ = aspect_ratio;
   UpdateProjectionMatrix();

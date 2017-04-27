@@ -33,14 +33,16 @@ namespace tango_augmented_reality {
         std::vector<unsigned int> textureMap;
         std::vector<tango_gl::StaticMesh> static_meshes_;
         std::vector<tango_gl::Transform*> static_mesh_transforms_;
-        std::vector<tango_gl::StaticMesh*> ball_meshes_;
-        std::vector<tango_gl::Transform*> ball_mesh_transforms_;
-        std::vector<tango_gl::Material*> ball_mesh_materials_;
-        std::vector<tango_gl::Texture*> ball_mesh_textures_;
+        std::vector<tango_gl::StaticMesh*> marker_meshes_;
+        std::vector<tango_gl::Transform*> marker_mesh_transforms_;
+        std::vector<tango_gl::Material*> marker_mesh_materials_;
+        std::vector<tango_gl::Texture*> marker_mesh_textures_;
         std::vector<tango_gl::StaticMesh> debug_meshes_;
         std::vector<SingleDynamicMesh*> dynamic_meshes_;
         tango_gl::Material* color_vertex_shader;
         tango_gl::Material* textured_shader;
+        tango_gl::Material* marker_material;
+        tango_gl::Texture* marker_texture;
     };
 }  // namespace mesh_builder
 

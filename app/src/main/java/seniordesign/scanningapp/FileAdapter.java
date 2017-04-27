@@ -51,7 +51,7 @@ public class FileAdapter extends BaseAdapter {
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(mContext, AugmentedRealityActivity.class);
+                Intent intent = new Intent(mContext, ViewerActivity.class);
                 intent.putExtra(FileActivity.FILE_NAME_KEY, fileNames.get(i));
                 mContext.startActivity(intent);
             }

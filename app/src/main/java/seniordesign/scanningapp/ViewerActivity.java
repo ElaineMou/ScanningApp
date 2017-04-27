@@ -208,7 +208,7 @@ public class ViewerActivity extends Activity{
 
             @Override
             public boolean onSingleTapUp(MotionEvent motionEvent) {
-                TangoJNINative.addBallViewer(motionEvent.getX(),motionEvent.getY());
+                TangoJNINative.addBallViewer(motionEvent.getX()/mScreenSize.x,motionEvent.getY()/mScreenSize.y);
                 return false;
             }
 

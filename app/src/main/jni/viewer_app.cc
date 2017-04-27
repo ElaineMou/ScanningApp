@@ -261,31 +261,51 @@ namespace tango_augmented_reality {
         binder_mutex_.unlock();
     }
 
-    void ViewerApp::AddBall(float x, float y) {
+    void ViewerApp::AddMarker(float x, float y) {
         // Init earth mesh and material
-        tango_gl::StaticMesh* ball_mesh_ = tango_gl::meshes::MakeSphereMesh(15, 15, 0.2f);
-        //ball_mesh_->render_mode = GL_TRIANGLES;
-        tango_gl::Transform* ball_transform = new tango_gl::Transform();
-        //ball_transform->SetPosition(glm::vec3(x,y,0.0));
-        //ball_transform->SetRotation(glm::quat(1.0f,1.0f,0,1.0f));
-        ball_transform->SetPosition(CenterOfStaticModel());
-        lastBall += .1f;
+        //tango_gl::StaticMesh* marker_mesh = tango_gl::meshes::MakeCubeMesh(0.2f);
+        tango_gl::Transform* marker_transform = new tango_gl::Transform();
+        /*glm::vec3 mins = MinsOfStaticModel();
+        glm::vec3 maxes = MaxesOfStaticModel();
 
-        tango_gl::Material* ball_material = new tango_gl::Material();
-        tango_gl::Texture* ball_texture_ = new tango_gl::Texture(main_scene_.aAssetManager, "earth.png");
+        float xPos = x*(maxes[0]-mins[0]) + mins[0];
+        float yPos = y*(maxes[1]-mins[1]) + mins[1];
+        float zPos = (maxes[2] + mins[2])/2;
+*/
+        glm::vec3 cameraPos = main_scene_.camera_->GetPosition();
+        glm::vec3 cameraLookAt = cameraPos +
+                                 main_scene_.camera_->GetRotation()*glm::vec3(0.0f,0.0f,10.0f);
+        glm::vec3 view = cameraLookAt - cameraPos;
+        view = glm::normalize(view);
 
-        ball_material->SetShader(
-                tango_gl::shaders::GetTexturedVertexShader().c_str(),
-                tango_gl::shaders::GetTexturedFragmentShader().c_str());
-        ball_material->SetParam("texture", ball_texture_);
+        glm::vec3 cameraUp = glm::cross(glm::cross(view,glm::vec3(0.0f,1.0f,0.0f)),view);
 
-        main_scene_.ball_meshes_.push_back(ball_mesh_);
-        main_scene_.ball_mesh_transforms_.push_back(ball_transform);
-        main_scene_.ball_mesh_materials_.push_back(ball_material);
-        main_scene_.ball_mesh_textures_.push_back(ball_texture_);
-        //std::vector<std::string> pngFiles;
-        //pngFiles.push_back("earth.png");
-        //textureProcessor->Add(pngFiles);
+        glm::vec3 h = glm::cross(view,cameraUp);
+        h = glm::normalize(h);
+
+        glm::vec3 v = glm::cross(h,view);
+        v = glm::normalize(v);
+
+        float rad = main_scene_.camera_->GetFov();
+        float vLength = tan(rad/2.0f) * kArCameraNearClippingPlane;
+        float hLength = vLength * (((float)viewport_width_)/viewport_height_);
+
+        v = v*vLength;
+        h = h*hLength;
+
+        x = (x-.5)*2;
+        y = (y-.5)*2;
+
+        glm::vec3 pos = cameraPos + view*kArCameraNearClippingPlane + h*x + v*y;
+        glm::vec3 dir = pos - cameraPos;
+        pos = pos + dir*100.0f;
+
+        tango_gl::StaticMesh* marker_mesh = MakeLineMesh(cameraPos, pos);
+        //marker_transform->SetPosition(glm::vec3(xPos,yPos,zPos));
+        //marker_transform->SetRotation(glm::quat(glm::vec3(0, 0, 3.1415926f)));
+
+        main_scene_.marker_meshes_.push_back(marker_mesh);
+        main_scene_.marker_mesh_transforms_.push_back(marker_transform);
     }
 
     std::string ViewerApp::GetTransformString() {
@@ -338,4 +358,60 @@ namespace tango_augmented_reality {
         LOGE("X: %f - %f Y: %f - %f Z: %f - %f", minX, maxX, minY, maxY, minZ, maxZ);
         return glm::vec3(midX,midY,midZ);
     }
+
+    glm::vec3 ViewerApp::MaxesOfStaticModel(){
+        float maxX = -99999999;
+        float maxY = -99999999;
+        float maxZ = -99999999;
+        for (tango_gl::StaticMesh mesh : main_scene_.static_meshes_) {
+            for (glm::vec3 vec : mesh.vertices) {
+                if (maxX < vec.x)
+                    maxX = vec.x;
+                if (maxY < vec.y)
+                    maxY = vec.y;
+                if (maxZ < vec.z)
+                    maxZ = vec.z;
+            }
+        }
+        return glm::vec3(maxX,maxY,maxZ);
+    }
+
+    glm::vec3 ViewerApp::MinsOfStaticModel(){
+        float minX = 99999999;
+        float minY = 99999999;
+        float minZ = 99999999;
+        for (tango_gl::StaticMesh mesh : main_scene_.static_meshes_) {
+            for (glm::vec3 vec : mesh.vertices) {
+                if (minX > vec.x)
+                    minX = vec.x;
+                if (minY > vec.y)
+                    minY = vec.y;
+                if (minZ > vec.z)
+                    minZ = vec.z;
+            }
+        }
+        return glm::vec3(minX,minY,minZ);
+    }
+
+
+    tango_gl::StaticMesh* ViewerApp::MakeLineMesh(glm::vec3 origin, glm::vec3 dest) {
+        tango_gl::StaticMesh* mesh = new tango_gl::StaticMesh();
+
+        mesh->vertices = std::vector<glm::vec3>(4);
+        mesh->vertices[0] = origin;
+        mesh->vertices[1] = dest;
+        mesh->vertices[2] = (dest-origin) + dest;
+        mesh->vertices[3] = (origin-dest) + origin;
+
+        mesh->uv = std::vector<glm::vec2>(3);
+
+        static const GLushort indices[] = {3,0, 0, 1, 1, 2};
+        mesh->indices = std::vector<GLuint>(
+                indices, indices + sizeof(indices) / sizeof(indices[0]));
+
+        mesh->render_mode = GL_LINES;
+
+        return mesh;
+    }
+
 }  // namespace tango_augmented_reality
