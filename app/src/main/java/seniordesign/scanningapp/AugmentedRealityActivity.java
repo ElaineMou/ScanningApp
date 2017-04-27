@@ -240,7 +240,7 @@ public class AugmentedRealityActivity extends Activity {
 
             @Override
             public boolean onSingleTapUp(MotionEvent motionEvent) {
-                //TangoJNINative.addBallViewer(motionEvent.getX(),motionEvent.getY());
+                //TangoJNINative.handleTouchViewer(motionEvent.getX(),motionEvent.getY());
                 return false;
             }
 

@@ -144,9 +144,13 @@ public class TangoJNINative {
                                       float moveZ);
     public static native void setZoomViewer(float zoom);
 
-    public static native void addBallViewer(float x, float y);
+    public static native void handleTouchViewer(float x, float y);
 
     public static native void setViewAugmentedReality(float mYaw, float mPitch, float mRoll, float mMoveX, float mMoveY, float mMoveZ);
 
     public static native void setZoomAugmentedReality(float mZoom);
+
+    public static native void setMarkersVisibleViewer(boolean b);
+
+    public static native void setAddingMarkersViewer(boolean b);
 }

@@ -90,19 +90,29 @@ class ViewerApp {
         void OnDeviceRotationChanged(int display_rotation);
 
         void Load(std::string filename);
+        void HandleTouch(float x, float y);
         void AddMarker(float x, float y);
         glm::vec3 CenterOfStaticModel();
         glm::vec3 MaxesOfStaticModel();
         glm::vec3 MinsOfStaticModel();
         tango_gl::StaticMesh* MakeLineMesh(glm::vec3 start, glm::vec3 end);
+        bool intersectRayTriangle(glm::vec3 origin, glm::vec3 direction, glm::vec3 vert0,
+                                          glm::vec3 vert1, glm::vec3 vert2, float &t);
         void Save(std::string filename);
         void SetView(float p, float y, float r, float mx, float my, float mz, bool g) { pitch = p; yaw = y; roll = r;
             movex = mx; movey = my; movez = mz;}
         void SetZoom(float value) { zoom = value;}
+        void SetMarkersVisible(bool show) {main_scene_.showMarkers = show;}
+        void SetAddingMarkers(bool adding) {
+            is_adding_markers = adding;
+            if (adding) {
+                SetMarkersVisible(true);
+            }
+        }
 
     private:
         // Request the render function from Java layer.
-        void RequestRender();
+        void RequestSetAddingFalse();
 
         // Update current transform and previous transform.
         //
@@ -162,11 +172,12 @@ class ViewerApp {
         // callback.
         JavaVM* java_vm_;
         jobject calling_activity_obj_;
-        jmethodID on_demand_render_;
+        jmethodID on_demand_set_adding;
 
         std::atomic<bool> is_service_connected_;
         std::atomic<bool> is_gl_initialized_;
         std::atomic<bool> is_video_overlay_rotation_set_;
+        std::atomic<bool> is_adding_markers;
 
         int viewport_width_;
         int viewport_height_;

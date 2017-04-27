@@ -1,24 +1,27 @@
 package seniordesign.scanningapp;
 
-import android.app.Activity;
 import android.content.ComponentName;
 import android.content.ServiceConnection;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Environment;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.Display;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.SeekBar;
-import android.widget.Toast;
 
 import java.io.File;
 
-public class ViewerActivity extends Activity{
+public class ViewerActivity extends AppCompatActivity{
 
     // GLSurfaceView and its renderer, all of the graphic content is rendered
     // through OpenGL ES 2.0 in the native code.
@@ -32,6 +35,8 @@ public class ViewerActivity extends Activity{
     private SeekBar topSeekBar;
     private VerticalSeekBar rightSeekBar;
     private SeekBar bottomSeekBar;
+    private FloatingActionButton showHideFab;
+    private FloatingActionButton addMarksFab;
 
     private GestureDetector mGestureDetector;
     private android.view.GestureDetector mTapDetector;
@@ -42,6 +47,8 @@ public class ViewerActivity extends Activity{
     private float mRoll = 0;
     private float mYaw = 0;
     private float mZoom = 5;
+    private boolean markersVisible = true;
+    private boolean addingMarkers = false;
     // Tango Service connection.
     ServiceConnection mTangoServiceConnection = new ServiceConnection() {
         @Override
@@ -104,7 +111,7 @@ public class ViewerActivity extends Activity{
             @Override
             public void onProgressChanged(SeekBar seekBar, int value, boolean byUser)
             {
-                mPitch = (float) Math.toRadians(-(value - .5*seekBar.getMax()));
+                mRoll = (float) Math.toRadians(-(value - .5*seekBar.getMax()));
                 TangoJNINative.setViewViewer(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
             }
 
@@ -148,7 +155,7 @@ public class ViewerActivity extends Activity{
             @Override
             public void onProgressChanged(SeekBar seekBar, int value, boolean byUser)
             {
-                mRoll = (float) Math.toRadians(-(value - .5*seekBar.getMax()));
+                mPitch = (float) Math.toRadians(-(value - .5*seekBar.getMax()));
                 TangoJNINative.setViewViewer(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
             }
 
@@ -208,7 +215,7 @@ public class ViewerActivity extends Activity{
 
             @Override
             public boolean onSingleTapUp(MotionEvent motionEvent) {
-                TangoJNINative.addBallViewer(motionEvent.getX()/mScreenSize.x,motionEvent.getY()/mScreenSize.y);
+                TangoJNINative.handleTouchViewer(motionEvent.getX()/mScreenSize.x,motionEvent.getY()/mScreenSize.y);
                 return false;
             }
 
@@ -227,7 +234,47 @@ public class ViewerActivity extends Activity{
                 return true;
             }
         });
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        showHideFab = (FloatingActionButton) findViewById(R.id.fab);
+        showHideFab.setRippleColor(ContextCompat.getColor(ViewerActivity.this,R.color.colorPrimary));
+        showHideFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                markersVisible = !markersVisible;
+                if(!markersVisible) {
+                    addingMarkers = false;
+                    TangoJNINative.setAddingMarkersViewer(addingMarkers);
+                    addMarksFab.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(ViewerActivity.this, R.color.colorAccent)));
+                    ((FloatingActionButton)view).setImageDrawable(ContextCompat.getDrawable(ViewerActivity.this, R.drawable.openeye));
+                } else {
+                    ((FloatingActionButton)view).setImageDrawable(ContextCompat.getDrawable(ViewerActivity.this, R.drawable.blindeye));
+                }
+                TangoJNINative.setMarkersVisibleViewer(markersVisible);
+            }
+        });
+
+        addMarksFab = (FloatingActionButton) findViewById(R.id.fab2);
+        addMarksFab.setRippleColor(ContextCompat.getColor(ViewerActivity.this,R.color.colorPrimary));
+        addMarksFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                addingMarkers = !addingMarkers;
+                if(addingMarkers) {
+                    markersVisible = true;
+                    showHideFab.setImageDrawable(ContextCompat.getDrawable(ViewerActivity.this, R.drawable.blindeye));
+                    view.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(ViewerActivity.this, R.color.pressedButton)));
+                } else {
+                    view.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(ViewerActivity.this, R.color.colorAccent)));
+                }
+                TangoJNINative.setAddingMarkersViewer(addingMarkers);
+            }
+        });
     }
+
+
 
     @Override
     protected void onPause() {
@@ -265,14 +312,11 @@ public class ViewerActivity extends Activity{
     }
 
 
-    // Request onGlSurfaceDrawFrame on the glSurfaceView. This function is called from the
-    // native code, and it is triggered from the onTextureAvailable callback from
-    // the Tango Service.
-    public void requestRender() {
-        if (mGLView.getRenderMode() != GLSurfaceView.RENDERMODE_CONTINUOUSLY) {
-            mGLView.setRenderMode(GLSurfaceView.RENDERMODE_WHEN_DIRTY);
-        }
-        mGLView.requestRender();
+    // This function is called from the
+    // native code.
+    public void setAddingFalse() {
+        addingMarkers = false;
+        addMarksFab.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(ViewerActivity.this, R.color.colorAccent)));
     }
 
 

@@ -41,6 +41,7 @@ jint JNI_OnLoad(JavaVM* vm, void*) {
   // We need to store a reference to the Java VM so that we can call into the
   // Java layer to trigger rendering.
   augmentedRealityApp.SetJavaVM(vm);
+  viewerApp.SetJavaVM(vm);
   return JNI_VERSION_1_6;
 }
 
@@ -184,9 +185,24 @@ Java_seniordesign_scanningapp_TangoJNINative_setZoomViewer(JNIEnv *env, jclass t
 
 
 JNIEXPORT void JNICALL
-Java_seniordesign_scanningapp_TangoJNINative_addBallViewer(JNIEnv *env, jclass type, jfloat x, jfloat y) {
+Java_seniordesign_scanningapp_TangoJNINative_handleTouchViewer(JNIEnv *env, jclass type, jfloat x,
+                                                             jfloat y) {
 
-    viewerApp.AddMarker(x, y);
+    viewerApp.HandleTouch(x, y);
+}
+
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_TangoJNINative_setMarkersVisibleViewer(JNIEnv *env, jclass type,
+                                                                     jboolean b) {
+    viewerApp.SetMarkersVisible(b);
+}
+
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_TangoJNINative_setAddingMarkersViewer(JNIEnv *env, jclass type,
+                                                                    jboolean b) {
+    viewerApp.SetAddingMarkers(b);
 }
 #ifdef __cplusplus
 }

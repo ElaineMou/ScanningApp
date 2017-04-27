@@ -36,7 +36,7 @@ namespace tango_augmented_reality {
     ViewerApp::ViewerApp() :  landscape(false),
                               textured(false),
                               scale(1),
-                              zoom(0)
+                              zoom(5)
     {
     }
 
@@ -63,13 +63,15 @@ namespace tango_augmented_reality {
         // id of the method we'd like to call on that activity.
         calling_activity_obj_ = env->NewGlobalRef(activity);
         jclass cls = env->GetObjectClass(activity);
-        on_demand_render_ = env->GetMethodID(cls, "requestRender", "()V");
+        on_demand_set_adding = env->GetMethodID(cls, "setAddingFalse", "()V");
 
         is_service_connected_ = false;
         is_gl_initialized_ = false;
 
         display_rotation_ = display_rotation;
         is_video_overlay_rotation_set_ = false;
+        is_adding_markers = false;
+        main_scene_.showMarkers = true;
     }
 
 
@@ -107,7 +109,7 @@ namespace tango_augmented_reality {
         env->DeleteGlobalRef(calling_activity_obj_);
 
         calling_activity_obj_ = nullptr;
-        on_demand_render_ = nullptr;
+        on_demand_set_adding = nullptr;
     }
 
     void ViewerApp::TangoSetupConfig() {
@@ -261,9 +263,16 @@ namespace tango_augmented_reality {
         binder_mutex_.unlock();
     }
 
+    void ViewerApp::HandleTouch(float x, float y) {
+        if(is_adding_markers) {
+            AddMarker(x,y);
+            is_adding_markers = false;
+            RequestSetAddingFalse();
+        }
+    }
+
     void ViewerApp::AddMarker(float x, float y) {
         // Init earth mesh and material
-        //tango_gl::StaticMesh* marker_mesh = tango_gl::meshes::MakeCubeMesh(0.2f);
         tango_gl::Transform* marker_transform = new tango_gl::Transform();
         /*glm::vec3 mins = MinsOfStaticModel();
         glm::vec3 maxes = MaxesOfStaticModel();
@@ -277,35 +286,46 @@ namespace tango_augmented_reality {
                                  main_scene_.camera_->GetRotation()*glm::vec3(0.0f,0.0f,10.0f);
         glm::vec3 view = cameraLookAt - cameraPos;
         view = glm::normalize(view);
-
         glm::vec3 cameraUp = glm::cross(glm::cross(view,glm::vec3(0.0f,1.0f,0.0f)),view);
-
         glm::vec3 h = glm::cross(view,cameraUp);
         h = glm::normalize(h);
-
         glm::vec3 v = glm::cross(h,view);
         v = glm::normalize(v);
 
         float rad = main_scene_.camera_->GetFov();
         float vLength = tan(rad/2.0f) * kArCameraNearClippingPlane;
         float hLength = vLength * (((float)viewport_width_)/viewport_height_);
-
         v = v*vLength;
         h = h*hLength;
-
-        x = (x-.5)*2;
-        y = (y-.5)*2;
-
+        x = (x-.5f)*2.0f;
+        y = (y-.5f)*2.0f;
         glm::vec3 pos = cameraPos + view*kArCameraNearClippingPlane + h*x + v*y;
         glm::vec3 dir = pos - cameraPos;
-        pos = pos + dir*100.0f;
+        pos = pos + dir*500.0f;
+        float time = 0.0f;
+        bool intersect = false;
 
-        tango_gl::StaticMesh* marker_mesh = MakeLineMesh(cameraPos, pos);
-        //marker_transform->SetPosition(glm::vec3(xPos,yPos,zPos));
-        //marker_transform->SetRotation(glm::quat(glm::vec3(0, 0, 3.1415926f)));
+        for(tango_gl::StaticMesh const &mesh : main_scene_.static_meshes_) {
+            for(int i=0;i+2<mesh.vertices.size();i+=3) {
+                if (intersect = intersectRayTriangle(cameraPos, dir, mesh.vertices[i], mesh.vertices[i + 1],
+                                         mesh.vertices[i + 2],
+                                         time)) {
+                    break;
+                }
+            }
+            if (intersect) {
+                break;
+            }
+        }
 
-        main_scene_.marker_meshes_.push_back(marker_mesh);
-        main_scene_.marker_mesh_transforms_.push_back(marker_transform);
+        if (intersect) {
+            glm::vec3 marker_pos = cameraPos + dir*time;
+            tango_gl::StaticMesh* marker_mesh = tango_gl::meshes::MakeCubeMesh(0.2f);
+            main_scene_.marker_meshes_.push_back(marker_mesh);
+            marker_transform->SetPosition(marker_pos);
+            main_scene_.marker_mesh_transforms_.push_back(marker_transform);
+        }
+        //tango_gl::StaticMesh* marker_mesh = MakeLineMesh(cameraPos, pos);
     }
 
     std::string ViewerApp::GetTransformString() {
@@ -317,16 +337,16 @@ namespace tango_augmented_reality {
         return tango_core_version_string_.c_str();
     }
 
-    void ViewerApp::RequestRender() {
-        if (calling_activity_obj_ == nullptr || on_demand_render_ == nullptr) {
-            LOGE("Can not reference Activity to request render");
+    void ViewerApp::RequestSetAddingFalse() {
+        if (calling_activity_obj_ == nullptr || on_demand_set_adding == nullptr) {
+            LOGE("Can not reference Activity to request setting adding to false");
             return;
         }
 
         // Here, we notify the Java activity that we'd like it to trigger a render.
         JNIEnv* env;
         java_vm_->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
-        env->CallVoidMethod(calling_activity_obj_, on_demand_render_);
+        env->CallVoidMethod(calling_activity_obj_, on_demand_set_adding);
     }
 
     glm::vec3 ViewerApp::CenterOfStaticModel(){
@@ -412,6 +432,40 @@ namespace tango_augmented_reality {
         mesh->render_mode = GL_LINES;
 
         return mesh;
+    }
+
+    bool ViewerApp::intersectRayTriangle(glm::vec3 origin, glm::vec3 direction, glm::vec3 vert0,
+                                             glm::vec3 vert1, glm::vec3 vert2, float &t) {
+        float eps = 0.000001;
+        glm::vec3 edge1, edge2, tvec, pvec, qvec;
+        float det, inv_det;
+
+        edge1 = vert1 - vert0;
+        edge2 = vert2 - vert0;
+
+        pvec = glm::cross(direction, edge2);
+        det = glm::dot(edge1,pvec);
+        if(det > -eps && det < eps) {
+            return false;
+        }
+        inv_det = 1.0/det;
+
+        tvec = origin - vert0;
+
+        float u = glm::dot(tvec,pvec) * inv_det;
+        if (u<0.0 || u > 1.0) {
+            return false;
+        }
+
+        qvec = glm::cross(tvec,edge1);
+
+        float v = glm::dot(direction,qvec) * inv_det;
+        if (v<0.0 || (u+v) > 1.0) {
+            return false;
+        }
+
+        t = glm::dot(edge2,qvec) * inv_det;
+        return true;
     }
 
 }  // namespace tango_augmented_reality

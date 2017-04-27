@@ -113,12 +113,12 @@ namespace tango_augmented_reality {
                 tango_gl::Render(mesh, *textured_shader, *(static_mesh_transforms_.at(i)), *camera_, -1);
             }
         }
-        for (int i = 0; i < marker_meshes_.size(); i++) {
-            tango_gl::StaticMesh* mesh = marker_meshes_.at(i);
-            
-            tango_gl::Transform *transform = marker_mesh_transforms_.at(i);
-
-            tango_gl::Render(*mesh, *marker_material, *transform, *camera_, mesh->indices.size());
+        if(showMarkers) {
+            for (int i = 0; i < marker_meshes_.size(); i++) {
+                tango_gl::StaticMesh *mesh = marker_meshes_.at(i);
+                tango_gl::Transform *transform = marker_mesh_transforms_.at(i);
+                tango_gl::Render(*mesh, *marker_material, *transform, *camera_, mesh->indices.size());
+            }
         }
         for (SingleDynamicMesh *mesh : dynamic_meshes_) {
             mesh->mutex.lock();
