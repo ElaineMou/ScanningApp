@@ -1,6 +1,7 @@
 package seniordesign.scanningapp;
 
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.ServiceConnection;
 import android.content.res.ColorStateList;
 import android.content.res.Configuration;
@@ -11,15 +12,23 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.TextViewCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Display;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.SeekBar;
+import android.widget.Spinner;
+import android.widget.TextView;
 
 import java.io.File;
+import java.util.ArrayList;
 
 public class ViewerActivity extends AppCompatActivity{
 
@@ -49,6 +58,8 @@ public class ViewerActivity extends AppCompatActivity{
     private float mZoom = 5;
     private boolean markersVisible = true;
     private boolean addingMarkers = false;
+
+    private ArrayList<MarkerInfo> markerList = new ArrayList<>();
     // Tango Service connection.
     ServiceConnection mTangoServiceConnection = new ServiceConnection() {
         @Override
@@ -311,19 +322,69 @@ public class ViewerActivity extends AppCompatActivity{
         TangoInitializationHelper.bindTangoService(this, mTangoServiceConnection);
     }
 
-
     // This function is called from the
     // native code.
-    public void setAddingFalse() {
+    public void returnFromPlacingMarker() {
         addingMarkers = false;
         addMarksFab.setBackgroundTintList(ColorStateList.valueOf(ContextCompat.getColor(ViewerActivity.this, R.color.colorAccent)));
+
+        final LayoutInflater inflater = getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.dialog_edit_marker,null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("New Item")
+            .setCancelable(true)
+            .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    // Remove most recent marker
+                    TangoJNINative.removeMarkerAtViewer(markerList.size());
+                }
+                })
+                .setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    EditText textbox = (EditText) dialogView.findViewById(R.id.dialog_textbox);
+                    Spinner holdSpinner = (Spinner) dialogView.findViewById(R.id.dialog_spinner);
+                    Spinner moveSpinner = (Spinner) dialogView.findViewById(R.id.dialog_spinner2);
+                    MarkerInfo info = new MarkerInfo();
+                    info.setDetails(textbox.getText().toString());
+                    info.setHoldType(MarkerInfo.HOLD_TYPE.fromNum(holdSpinner.getSelectedItemPosition()));
+                    info.setMoveType(MarkerInfo.MOVE_TYPE.fromNum(moveSpinner.getSelectedItemPosition()));
+                    markerList.add(info);
+                }
+            }
+        );
+        builder.setView(dialogView);
+        Spinner spinner = (Spinner) dialogView.findViewById(R.id.dialog_spinner);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,R.array.holds_array,
+                                            android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner = (Spinner) dialogView.findViewById(R.id.dialog_spinner2);
+        adapter = ArrayAdapter.createFromResource(this,R.array.moves_array,
+                android.R.layout.simple_spinner_item);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        builder.create().show();
     }
 
+    public void showMarkerInfo(int index) {
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_show_marker,null);
 
-    @Override
-    public void onBackPressed()
-    {
-        System.exit(0);
+        TextView textView = (TextView) dialogView.findViewById(R.id.description_textbox);
+        textView.setText(markerList.get(index).getDetails());
+        textView = (TextView) dialogView.findViewById(R.id.hold_type_textbox);
+        MarkerInfo.HOLD_TYPE hold = markerList.get(index).getHoldType();
+        textView.setText(hold == null ? "" : hold.toString());
+        MarkerInfo.MOVE_TYPE move = markerList.get(index).getMoveType();
+        textView = (TextView) dialogView.findViewById(R.id.move_type_textbox);
+        textView.setText(move == null ? "" : move.toString());
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(false).setPositiveButton("Okay", null);
+        builder.setView(dialogView);
+        builder.create().show();
     }
 
     @Override

@@ -204,6 +204,13 @@ Java_seniordesign_scanningapp_TangoJNINative_setAddingMarkersViewer(JNIEnv *env,
                                                                     jboolean b) {
     viewerApp.SetAddingMarkers(b);
 }
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_TangoJNINative_removeMarkerAtViewer(JNIEnv *env, jclass type, jint i) {
+
+    viewerApp.removeMarkerAt(i);
+}
+
 #ifdef __cplusplus
 }
 #endif

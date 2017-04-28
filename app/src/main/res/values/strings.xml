@@ -29,5 +29,34 @@
     <string name="pref_photomode">pref_photomode</string>
     <string name="pref_texture">pref_texture</string>
     <string name="no_data">No Files</string>
+    <string name="hold_header">Hold Type:</string>
+    <string name="move_header">Move Type:</string>
+    <string-array name="holds_array">
+        <item> </item>
+        <item>Crimp</item>
+        <item>Edge</item>\
+        <item>Jug</item>
+        <item>Pinch</item>
+        <item>Pocket</item>
+        <item>Sloper</item>
+        <item>Undercling</item>
+        <item>Finger Crack</item>
+        <item>Hand Crack</item>
+        <item>Offwidth</item>
+    </string-array>
+    <string-array name="moves_array">
+        <item> </item>
+        <item>Deadpoint</item>
+        <item>Dyno</item>
+        <item>Finger Lock</item>
+        <item>Gaston</item>
+        <item>Heel Hook</item>
+        <item>Knee Bar</item>
+        <item>Layback</item>
+        <item>Lock-off</item>
+        <item>Mantle</item>
+        <item>Sidepull</item>
+        <item>Stem</item>
+    </string-array>
 </resources>
 

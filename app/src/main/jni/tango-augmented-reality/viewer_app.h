@@ -91,7 +91,8 @@ class ViewerApp {
 
         void Load(std::string filename);
         void HandleTouch(float x, float y);
-        void AddMarker(float x, float y);
+        bool AddMarker(float x, float y);
+        void CheckForMarkerTouch(float x, float y);
         glm::vec3 CenterOfStaticModel();
         glm::vec3 MaxesOfStaticModel();
         glm::vec3 MinsOfStaticModel();
@@ -103,16 +104,14 @@ class ViewerApp {
             movex = mx; movey = my; movez = mz;}
         void SetZoom(float value) { zoom = value;}
         void SetMarkersVisible(bool show) {main_scene_.showMarkers = show;}
-        void SetAddingMarkers(bool adding) {
-            is_adding_markers = adding;
-            if (adding) {
-                SetMarkersVisible(true);
-            }
-        }
+        void SetAddingMarkers(bool adding);
+        void removeMarkerAt(int i);
 
-    private:
+private:
         // Request the render function from Java layer.
-        void RequestSetAddingFalse();
+        void RequestReturnFromPlaceMarker();
+
+        void RequestShowMarkerAt(int index);
 
         // Update current transform and previous transform.
         //
@@ -172,7 +171,8 @@ class ViewerApp {
         // callback.
         JavaVM* java_vm_;
         jobject calling_activity_obj_;
-        jmethodID on_demand_set_adding;
+        jmethodID on_demand_return_place_marker;
+        jmethodID on_demand_show_marker_info;
 
         std::atomic<bool> is_service_connected_;
         std::atomic<bool> is_gl_initialized_;

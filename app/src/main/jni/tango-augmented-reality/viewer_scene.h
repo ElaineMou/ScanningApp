@@ -43,7 +43,10 @@ namespace tango_augmented_reality {
         tango_gl::Material* textured_shader;
         tango_gl::Material* marker_material;
         tango_gl::Texture* marker_texture;
+        tango_gl::Material* chosen_marker_material;
+        tango_gl::Texture* chosen_marker_texture;
         bool showMarkers;
+        int chosenMarkerIndex = -1;
     };
 }  // namespace mesh_builder
 

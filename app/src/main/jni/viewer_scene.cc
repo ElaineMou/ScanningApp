@@ -39,11 +39,18 @@ namespace tango_augmented_reality {
                                    tango_gl::shaders::GetTexturedFragmentShader().c_str());
         marker_material = new tango_gl::Material();
         marker_texture = new tango_gl::Texture(aAssetManager, "block.png");
-
         marker_material->SetShader(
                 tango_gl::shaders::GetTexturedVertexShader().c_str(),
                 tango_gl::shaders::GetTexturedFragmentShader().c_str());
         marker_material->SetParam("texture", marker_texture);
+
+
+        chosen_marker_material = new tango_gl::Material();
+        chosen_marker_texture = new tango_gl::Texture(aAssetManager, "chosenblock.png");
+        chosen_marker_material->SetShader(
+                tango_gl::shaders::GetTexturedVertexShader().c_str(),
+                tango_gl::shaders::GetTexturedFragmentShader().c_str());
+        chosen_marker_material->SetParam("texture", chosen_marker_texture);
     }
 
     void ViewerScene::DeleteResources() {
@@ -117,7 +124,13 @@ namespace tango_augmented_reality {
             for (int i = 0; i < marker_meshes_.size(); i++) {
                 tango_gl::StaticMesh *mesh = marker_meshes_.at(i);
                 tango_gl::Transform *transform = marker_mesh_transforms_.at(i);
-                tango_gl::Render(*mesh, *marker_material, *transform, *camera_, mesh->indices.size());
+                if(i != chosenMarkerIndex) {
+                    tango_gl::Render(*mesh, *marker_material, *transform, *camera_,
+                                     mesh->indices.size());
+                } else {
+                    tango_gl::Render(*mesh, *chosen_marker_material, *transform, *camera_,
+                                     mesh->indices.size());
+                }
             }
         }
         for (SingleDynamicMesh *mesh : dynamic_meshes_) {

@@ -153,4 +153,6 @@ public class TangoJNINative {
     public static native void setMarkersVisibleViewer(boolean b);
 
     public static native void setAddingMarkersViewer(boolean b);
+
+    public static native void removeMarkerAtViewer(int i);
 }
