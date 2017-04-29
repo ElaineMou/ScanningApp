@@ -12,6 +12,7 @@ public class MarkerInfo {
 
         private int num;
         private String name;
+        private MarkerTransform transform;
 
         @Override
         public String toString() {
@@ -77,5 +78,11 @@ public class MarkerInfo {
     }
     public void setDetails(String det){
         this.details = det;
+    }
+
+    private class MarkerTransform {
+        float position[];
+        float rotation[];
+        float scale[];
     }
 }

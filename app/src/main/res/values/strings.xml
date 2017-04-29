@@ -31,6 +31,7 @@
     <string name="no_data">No Files</string>
     <string name="hold_header">Hold Type:</string>
     <string name="move_header">Move Type:</string>
+    <string name="walls_title">Walls</string>
     <string-array name="holds_array">
         <item> </item>
         <item>Crimp</item>
