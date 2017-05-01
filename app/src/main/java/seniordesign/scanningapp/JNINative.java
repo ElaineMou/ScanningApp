@@ -140,8 +140,7 @@ public class JNINative {
      */
     public static native void loadViewer(String fileName);
 
-    public static native void setViewViewer(float yaw, float pitch, float roll, float moveX, float moveY,
-                                      float moveZ);
+    public static native void setViewViewer(float yaw, float pitch, float roll);
     public static native void setZoomViewer(float zoom);
 
     public static native void handleTouchViewer(float x, float y);
@@ -156,5 +155,7 @@ public class JNINative {
 
     public static native void removeMarkerAtViewer(int i);
 
-    public static native void renderMarker(float x, float y, float z);
+    public static native void renderMarkerViewer(float x, float y, float z);
+
+    public static native void moveCameraViewer(float factor, float dX, float dY);
 }

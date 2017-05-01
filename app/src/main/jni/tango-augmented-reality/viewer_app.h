@@ -101,8 +101,8 @@ class ViewerApp {
         bool intersectRayTriangle(glm::vec3 origin, glm::vec3 direction, glm::vec3 vert0,
                                           glm::vec3 vert1, glm::vec3 vert2, float &t);
         void Save(std::string filename);
-        void SetView(float p, float y, float r, float mx, float my, float mz, bool g) { pitch = p; yaw = y; roll = r;
-            movex = mx; movey = my; movez = mz;}
+        void SetView(float p, float y, float r) { pitch = p; yaw = y; roll = r;}
+        void MoveCamera(float f, float dX, float dY);
         void SetZoom(float value) { zoom = value;}
         void SetMarkersVisible(bool show) {main_scene_.showMarkers = show;}
         void SetAddingMarkers(bool adding);
@@ -200,9 +200,12 @@ private:
         bool landscape;
         bool textured;
         float scale;
-        float movex;
-        float movey;
-        float movez;
+        float movex = 0.0f;
+        float movey = 0.0f;
+        float movez = 0.0f;
+        float x;
+        float y;
+        float z;
         float pitch;
         float yaw;
         float roll;

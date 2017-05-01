@@ -34,6 +34,7 @@ std::string jstring2string(JNIEnv* env, jstring name)
   return str;
 }
 
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -173,9 +174,8 @@ Java_seniordesign_scanningapp_JNINative_loadViewer(JNIEnv *env, jclass type,
 
 JNIEXPORT void JNICALL
 Java_seniordesign_scanningapp_JNINative_setViewViewer(JNIEnv *env, jclass type, jfloat yaw,
-                                                     jfloat pitch, jfloat roll, jfloat moveX,
-                                                     jfloat moveY, jfloat moveZ) {
-    viewerApp.SetView(pitch,yaw,roll,moveX,moveY,moveZ,false);
+                                                     jfloat pitch, jfloat roll) {
+    viewerApp.SetView(pitch,yaw,roll);
 }
 
 JNIEXPORT void JNICALL
@@ -213,9 +213,16 @@ Java_seniordesign_scanningapp_JNINative_removeMarkerAtViewer(JNIEnv *env, jclass
 
 
 JNIEXPORT void JNICALL
-Java_seniordesign_scanningapp_JNINative_renderMarker(JNIEnv *env, jclass type, jfloat x, jfloat y,
-                                                     jfloat z) {
+Java_seniordesign_scanningapp_JNINative_renderMarkerViewer(JNIEnv *env, jclass type, jfloat x,
+                                                           jfloat y,
+                                                           jfloat z) {
     viewerApp.AddMarkerToScene(x,y,z);
+}
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_JNINative_moveCameraViewer(JNIEnv *env, jclass type, jfloat factor,
+                                                         jfloat dX, jfloat dY) {
+    viewerApp.MoveCamera(factor, dX, dY);
 }
 
 #ifdef __cplusplus

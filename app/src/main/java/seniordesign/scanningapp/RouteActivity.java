@@ -90,7 +90,6 @@ public class RouteActivity extends Activity {
                     String difficulty = jsonObject.getString(Route.DIFFICULTY_JSON_KEY);
                     String description = jsonObject.getString(Route.DESCRIPTION_JSON_KEY);
                     String markersJson = jsonObject.getString(Route.MARKERS_JSON_KEY);
-                    Log.d("ViewerActivity","RouteAct: " + markersJson);
 
                     Route route = new Route(routeName,difficulty);
                     route.setDescription(description);

@@ -1,7 +1,6 @@
 package seniordesign.scanningapp;
 
 import android.content.ComponentName;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.ServiceConnection;
 import android.content.res.ColorStateList;
@@ -15,7 +14,6 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -28,17 +26,12 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-
-import static android.R.attr.x;
-import static android.R.attr.y;
 
 public class ViewerActivity extends AppCompatActivity{
 
@@ -138,7 +131,7 @@ public class ViewerActivity extends AppCompatActivity{
             public void onProgressChanged(SeekBar seekBar, int value, boolean byUser)
             {
                 mRoll = (float) Math.toRadians(-(value - .5*seekBar.getMax()));
-                JNINative.setViewViewer(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
+                JNINative.setViewViewer(mYaw, mPitch, mRoll);
             }
 
             @Override
@@ -160,7 +153,7 @@ public class ViewerActivity extends AppCompatActivity{
             public void onProgressChanged(SeekBar seekBar, int value, boolean byUser)
             {
                 mYaw = (float) Math.toRadians(-(value - .5*seekBar.getMax()));
-                JNINative.setViewViewer(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
+                JNINative.setViewViewer(mYaw, mPitch, mRoll);
             }
 
             @Override
@@ -182,7 +175,7 @@ public class ViewerActivity extends AppCompatActivity{
             public void onProgressChanged(SeekBar seekBar, int value, boolean byUser)
             {
                 mPitch = (float) Math.toRadians(-(value - .5*seekBar.getMax()));
-                JNINative.setViewViewer(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
+                JNINative.setViewViewer(mYaw, mPitch, mRoll);
             }
 
             @Override
@@ -201,18 +194,15 @@ public class ViewerActivity extends AppCompatActivity{
             @Override
             public void OnMove(float dx, float dy)
             {
-                double angle = -mYaw;
                 float f = getMoveFactor();
-                mMoveX += dx * f * Math.cos( angle ) + dy * f * Math.sin( angle );
-                mMoveY += dx * f * Math.sin( angle ) + dy * f * Math.cos( angle );
-                JNINative.setViewViewer(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
+                JNINative.moveCameraViewer(f,-dx,dy);
             }
 
             @Override
             public void OnRotation(float angle)
             {
                 mYaw = (float) Math.toRadians(-angle);
-                JNINative.setViewViewer(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
+                JNINative.setViewViewer(mYaw, mPitch, mRoll);
             }
 
             @Override
@@ -337,13 +327,12 @@ public class ViewerActivity extends AppCompatActivity{
         String markersString = getIntent().getStringExtra(RouteActivity.ROUTE_MARKERS_KEY);
         if(markersString!=null) {
             try {
-                Log.d("ViewerActivity",markersString);
                 markerList = MarkerInfo.MarkersFromJson(markersString);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
             for(MarkerInfo info : markerList) {
-                JNINative.renderMarker(info.getTransform()[0],info.getTransform()[1],info.getTransform()[2]);
+                JNINative.renderMarkerViewer(info.getTransform()[0],info.getTransform()[1],info.getTransform()[2]);
             }
         }
 

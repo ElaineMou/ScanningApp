@@ -233,7 +233,8 @@ namespace tango_augmented_reality {
         if (!is_gl_initialized_ || !is_service_connected_) {
             return;
         }
-        main_scene_.camera_->SetPosition(glm::vec3(movex, movey, movez));
+        main_scene_.camera_->SetPosition(glm::vec3(x,y,z));
+        //main_scene_.camera_->SetPosition(glm::vec3(movex, movey, movez));
         main_scene_.camera_->SetRotation(glm::quat(glm::vec3(yaw, pitch, roll)));
         main_scene_.camera_->SetScale(glm::vec3(1, 1, 1));
 
@@ -567,6 +568,26 @@ namespace tango_augmented_reality {
         }
         main_scene_.marker_meshes_.erase(main_scene_.marker_meshes_.begin() + i);
         main_scene_.marker_mesh_transforms_.erase(main_scene_.marker_mesh_transforms_.begin() + i);
+    }
+
+    void ViewerApp::MoveCamera(float f, float dX, float dY) {
+        glm::vec3 cameraPos = main_scene_.camera_->GetPosition();
+        glm::vec3 cameraLookAt = cameraPos +
+                                 main_scene_.camera_->GetRotation()*glm::vec3(0.0f,0.0f,10.0f);
+        glm::vec3 view = cameraLookAt - cameraPos;
+        view = glm::normalize(view);
+        glm::vec3 cameraUp = glm::cross(glm::cross(view,glm::vec3(0.0f,1.0f,0.0f)),view);
+        glm::vec3 h = glm::cross(view,cameraUp);
+        h = glm::normalize(h);
+        glm::vec3 v = glm::cross(h,view);
+        v = glm::normalize(v);
+
+        glm::vec3 up = glm::normalize(cameraUp);
+        glm::vec3 left = h;
+        glm::vec3 xyz = glm::vec3(x,y,z) + left*f*dX + up*f*dY;
+        x = xyz[0];
+        y = xyz[1];
+        z = xyz[2];
     }
 
 }  // namespace tango_augmented_reality

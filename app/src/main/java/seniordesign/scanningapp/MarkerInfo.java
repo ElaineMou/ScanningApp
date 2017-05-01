@@ -72,7 +72,7 @@ public class MarkerInfo {
         public String toString() {
             return name;
         }
-        
+
         public static MOVE_TYPE fromNum(int i) {
             for(MOVE_TYPE type : MOVE_TYPE.values()) {
                 if (type.num == i) {
