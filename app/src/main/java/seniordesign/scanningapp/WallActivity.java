@@ -1,6 +1,7 @@
 package seniordesign.scanningapp;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
@@ -12,6 +13,7 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -74,7 +76,11 @@ public class WallActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         FILE_LOCATION = getFilesDir();
-        /*File file = new File(FILE_LOCATION, WALLS_LIST_NAME);
+        /*File[] files = FILE_LOCATION.listFiles();
+        for(File file : files) {
+            file.delete();
+        }
+        File file = new File(FILE_LOCATION, WALLS_LIST_NAME);
         if(file.exists()) {
             file.delete();
         }

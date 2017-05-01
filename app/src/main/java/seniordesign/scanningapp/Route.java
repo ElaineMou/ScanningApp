@@ -1,5 +1,9 @@
 package seniordesign.scanningapp;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.util.ArrayList;
 
 /**
@@ -41,13 +45,31 @@ public class Route {
     public void setMarkers(ArrayList<MarkerInfo> markers) {
         this.markers = markers;
     }
-    public String getMarkersString() {return "";}
-
+    public JSONArray getMarkersAsJson() throws JSONException {
+        JSONArray array = new JSONArray();
+        for(MarkerInfo info : markers) {
+            array.put(info.toJSON());
+        }
+        return array;
+    }
     public String getDescription() {
         return description;
     }
-
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public JSONObject toJSON() throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put(NAME_JSON_KEY,name);
+        jsonObject.put(DIFFICULTY_JSON_KEY,difficulty);
+        jsonObject.put(DESCRIPTION_JSON_KEY,description);
+        jsonObject.put(MARKERS_JSON_KEY,getMarkersAsJson());
+        return jsonObject;
+    }
+
+    public void setMarkersFromJson(String markersJson) throws JSONException {
+        ArrayList<MarkerInfo> list = MarkerInfo.MarkersFromJson(markersJson);
+        setMarkers(list);
     }
 }

@@ -1,6 +1,7 @@
 package seniordesign.scanningapp;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.ServiceConnection;
 import android.content.res.ColorStateList;
@@ -14,6 +15,7 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -24,11 +26,24 @@ import android.widget.EditText;
 import android.widget.SeekBar;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 
+import static android.R.attr.x;
+import static android.R.attr.y;
+
 public class ViewerActivity extends AppCompatActivity{
+
+    public static final String ROUTE_FILE_PREFIX = "route";
+    public static final String ROUTE_FILE_SUFFIX = ".json";
 
     // GLSurfaceView and its renderer, all of the graphic content is rendered
     // through OpenGL ES 2.0 in the native code.
@@ -44,6 +59,7 @@ public class ViewerActivity extends AppCompatActivity{
     private SeekBar bottomSeekBar;
     private FloatingActionButton showHideFab;
     private FloatingActionButton addMarksFab;
+    private FloatingActionButton saveRouteFab;
 
     private GestureDetector mGestureDetector;
     private android.view.GestureDetector mTapDetector;
@@ -56,6 +72,7 @@ public class ViewerActivity extends AppCompatActivity{
     private float mZoom = 5;
     private boolean markersVisible = true;
     private boolean addingMarkers = false;
+    private File saveDirectory = null;
 
     private ArrayList<MarkerInfo> markerList = new ArrayList<>();
     // Tango Service connection.
@@ -265,7 +282,7 @@ public class ViewerActivity extends AppCompatActivity{
             }
         });
 
-        addMarksFab = (FloatingActionButton) findViewById(R.id.fab2);
+        addMarksFab = (FloatingActionButton) findViewById(R.id.fab3);
         addMarksFab.setRippleColor(ContextCompat.getColor(ViewerActivity.this,R.color.colorPrimary));
         addMarksFab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -281,9 +298,21 @@ public class ViewerActivity extends AppCompatActivity{
                 JNINative.setAddingMarkersViewer(addingMarkers);
             }
         });
+
+        saveRouteFab = (FloatingActionButton) findViewById(R.id.fab2);
+        saveRouteFab.setRippleColor(ContextCompat.getColor(ViewerActivity.this,R.color.colorPrimary));
+        saveRouteFab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                saveRoute();
+            }
+        });
+
+        String folderName = getIntent().getStringExtra(WallActivity.FOLDER_NAME_KEY);
+        if(folderName!=null) {
+            saveDirectory = new File(getFilesDir(),folderName);
+        }
     }
-
-
 
     @Override
     protected void onPause() {
@@ -304,6 +333,19 @@ public class ViewerActivity extends AppCompatActivity{
     protected void onResume() {
         super.onResume();
         mGLView.onResume();
+
+        String markersString = getIntent().getStringExtra(RouteActivity.ROUTE_MARKERS_KEY);
+        if(markersString!=null) {
+            try {
+                Log.d("ViewerActivity",markersString);
+                markerList = MarkerInfo.MarkersFromJson(markersString);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            for(MarkerInfo info : markerList) {
+                JNINative.renderMarker(info.getTransform()[0],info.getTransform()[1],info.getTransform()[2]);
+            }
+        }
 
         mGLView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
 
@@ -397,6 +439,71 @@ public class ViewerActivity extends AppCompatActivity{
         builder.create().show();
     }
 
+    private void saveRoute() {
+        final LayoutInflater inflater = getLayoutInflater();
+        final View dialogView = inflater.inflate(R.layout.dialog_edit_route,null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("New Item")
+                .setCancelable(true)
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Okay", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+
+                    }
+                });
+        builder.setView(dialogView);
+        final EditText nameText = (EditText) dialogView.findViewById(R.id.name_textbox);
+        final EditText diffText = (EditText) dialogView.findViewById(R.id.difficulty_textbox);
+        final EditText descText = (EditText) dialogView.findViewById(R.id.dialog_textbox);
+
+        final AlertDialog dialog = builder.create();
+        dialog.show();
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String name = nameText.getText().toString().trim();
+                String diff = diffText.getText().toString().trim();
+                String desc = descText.getText().toString().trim();
+                boolean done = !name.isEmpty();
+                // if EditText is empty disable closing on possitive button
+                if (done) {
+                    Route route = new Route(name,diff);
+                    route.setDescription(desc);
+                    route.setMarkers(markerList);
+                    boolean success = true;
+                    if(saveDirectory!=null && saveDirectory.isDirectory()) {
+                        File newFile = uniqueFileName(saveDirectory);
+                        //String fileName = saveDirectory.getName() + File.pathSeparator + newFile.getName();
+                        FileOutputStream outputStream;
+
+                        try {
+                            newFile.createNewFile();
+                            outputStream = new FileOutputStream(newFile);
+                            outputStream.write(route.toJSON().toString().getBytes());
+                            outputStream.close();
+                        } catch (IOException e) {
+                            success = false;
+                            e.printStackTrace();
+                        } catch (JSONException e) {
+                            success = false;
+                            e.printStackTrace();
+                        }
+                    } else {
+                        success = false;
+                    }
+                    if(!success) {
+                        Toast.makeText(ViewerActivity.this, "Error saving to file", Toast.LENGTH_SHORT);
+                    } else {
+                        Toast.makeText(ViewerActivity.this, "Route " + route.getName() + " saved.",
+                                Toast.LENGTH_SHORT);
+                    }
+                    dialog.dismiss();
+                }
+            }
+        });
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         mGestureDetector.onTouchEvent(event);
@@ -413,6 +520,18 @@ public class ViewerActivity extends AppCompatActivity{
         display.getSize(mScreenSize);
 
         JNINative.onConfigurationChangedViewer(display.getRotation());
+    }
+
+    private File uniqueFileName(File directory) {
+        int i=0;
+        File file = null;
+        while(file==null || file.exists()) {
+            String name = ROUTE_FILE_PREFIX + String.format("%03d",i) + ROUTE_FILE_SUFFIX;
+            file = new File(directory,name);
+            i++;
+        }
+
+        return file;
     }
 
     private float getMoveFactor()

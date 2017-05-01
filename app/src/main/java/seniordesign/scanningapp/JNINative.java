@@ -155,4 +155,6 @@ public class JNINative {
     public static native void setAddingMarkersViewer(boolean b);
 
     public static native void removeMarkerAtViewer(int i);
+
+    public static native void renderMarker(float x, float y, float z);
 }

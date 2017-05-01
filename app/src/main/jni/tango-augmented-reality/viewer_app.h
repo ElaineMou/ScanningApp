@@ -93,6 +93,7 @@ class ViewerApp {
         void HandleTouch(float x, float y);
         bool AddMarker(float x, float y);
         void CheckForMarkerTouch(float x, float y);
+        void AddMarkerToScene(float x,float y,float z);
         glm::vec3 CenterOfStaticModel();
         glm::vec3 MaxesOfStaticModel();
         glm::vec3 MinsOfStaticModel();

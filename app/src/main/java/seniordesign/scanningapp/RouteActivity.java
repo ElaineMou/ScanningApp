@@ -1,9 +1,14 @@
 package seniordesign.scanningapp;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -13,8 +18,10 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * Created by Elaine on 4/28/2017.
@@ -26,6 +33,7 @@ public class RouteActivity extends Activity {
     public static final String ROUTE_MARKERS_KEY = "routeMarksKey";
     public static final String ROUTE_FILE_KEY = "routeFileKey";
 
+    private FloatingActionButton fab;
     private File FILE_LOCATION;
     private ArrayList<Route> routes = new ArrayList<>();
     private String wallName;
@@ -42,17 +50,34 @@ public class RouteActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        File[] routeFiles = FILE_LOCATION.listFiles(new FileFilter() {
+
+        fab = (FloatingActionButton) findViewById(R.id.fab);
+        fab.setRippleColor(ContextCompat.getColor(this,R.color.colorPrimary));
+        fab.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean accept(File file) {
-                return file.getName().endsWith(".json");
+            public void onClick(View view) {
+                Intent intent = new Intent(RouteActivity.this, ViewerActivity.class);
+                intent.putExtra(WallActivity.FOLDER_NAME_KEY, FILE_LOCATION.getName());
+                startActivity(intent);
             }
         });
+
+        ((TextView) findViewById(R.id.title)).setText(wallName);
+
+        File[] routeFiles = FILE_LOCATION.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File file, String s) {
+                return s.endsWith(ViewerActivity.ROUTE_FILE_SUFFIX);
+            }
+        });
+        ArrayList<File> filesArrayList = new ArrayList<>();
+        routes.clear();
         if(routeFiles!=null && routeFiles.length>0) {
-            routes.clear();
             try {
-                for(int i=0;i<routeFiles.length;i++) {
-                    FileReader reader = new FileReader(routeFiles[i]);
+                filesArrayList = new ArrayList<File>(Arrays.asList(routeFiles));
+                for(int i=0;i<filesArrayList.size();i++) {
+
+                    FileReader reader = new FileReader(filesArrayList.get(i));
                     BufferedReader bufferedReader = new BufferedReader(reader);
                     StringBuffer sb = new StringBuffer();
                     String line;
@@ -64,9 +89,12 @@ public class RouteActivity extends Activity {
                     String routeName = jsonObject.getString(Route.NAME_JSON_KEY);
                     String difficulty = jsonObject.getString(Route.DIFFICULTY_JSON_KEY);
                     String description = jsonObject.getString(Route.DESCRIPTION_JSON_KEY);
+                    String markersJson = jsonObject.getString(Route.MARKERS_JSON_KEY);
+                    Log.d("ViewerActivity","RouteAct: " + markersJson);
 
                     Route route = new Route(routeName,difficulty);
                     route.setDescription(description);
+                    route.setMarkersFromJson(markersJson);
                     routes.add(route);
                 }
             } catch (FileNotFoundException e) {
@@ -77,7 +105,7 @@ public class RouteActivity extends Activity {
                 e.printStackTrace();
             }
         }
-        RouteAdapter routeAdapter = new RouteAdapter(this,routes,FILE_LOCATION.getPath(), routeFiles);
+        RouteAdapter routeAdapter = new RouteAdapter(this,routes,FILE_LOCATION.getName(),filesArrayList);
         findViewById(R.id.no_data).setVisibility(routeAdapter.getCount()==0 ? View.VISIBLE : View.GONE);
         ((ListView)findViewById(R.id.list)).setAdapter(routeAdapter);
     }

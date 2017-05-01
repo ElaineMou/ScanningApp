@@ -211,6 +211,13 @@ Java_seniordesign_scanningapp_JNINative_removeMarkerAtViewer(JNIEnv *env, jclass
     viewerApp.removeMarkerAt(i);
 }
 
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_JNINative_renderMarker(JNIEnv *env, jclass type, jfloat x, jfloat y,
+                                                     jfloat z) {
+    viewerApp.AddMarkerToScene(x,y,z);
+}
+
 #ifdef __cplusplus
 }
 #endif

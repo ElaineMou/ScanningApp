@@ -391,6 +391,14 @@ namespace tango_augmented_reality {
 
     }
 
+    void ViewerApp::AddMarkerToScene(float x,float y,float z) {
+        tango_gl::StaticMesh* marker_mesh = tango_gl::meshes::MakeCubeMesh(0.2f);
+        main_scene_.marker_meshes_.push_back(marker_mesh);
+        tango_gl::Transform* transform = new tango_gl::Transform();
+        transform->SetPosition(glm::vec3(x,y,z));
+        main_scene_.marker_mesh_transforms_.push_back(transform);
+    }
+
     std::string ViewerApp::GetTransformString() {
         std::lock_guard<std::mutex> lock(transform_mutex_);
         return transform_string_;

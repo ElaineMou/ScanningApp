@@ -37,6 +37,10 @@
             android:label="Viewer"
             />
         <activity
+            android:name=".RouteActivity"
+            android:label="Routes"
+            />
+        <activity
             android:name=".WallActivity"
             android:label="Walls">
             <intent-filter>

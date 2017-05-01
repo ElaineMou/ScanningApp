@@ -1,6 +1,10 @@
 package seniordesign.scanningapp;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 /**
  * Created by Elaine on 4/27/2017.
@@ -10,7 +14,10 @@ public class MarkerInfo {
     public static final String HOLD_JSON_KEY = "hold";
     public static final String MOVE_JSON_KEY = "move";
     public static final String DESC_JSON_KEY = "description";
-    public static final String TRANSFORM_JSON_KEY = "transform";
+    public static final String X_JSON_KEY = "x";
+    public static final String Y_JSON_KEY = "y";
+    public static final String Z_JSON_KEY = "z";
+
 
     public enum HOLD_TYPE {
         CRIMP(1, "Crimp"), EDGE(2, "Edge"), JUG(3, "Jug"), PINCH(4, "Pinch"), POCKET(5, "Pocket"),
@@ -39,7 +46,7 @@ public class MarkerInfo {
         }
         public static HOLD_TYPE fromString(String s) {
             for(HOLD_TYPE type : HOLD_TYPE.values()) {
-                if (type.name == s) {
+                if (type.name.equals(s)) {
                     return type;
                 }
             }
@@ -60,9 +67,24 @@ public class MarkerInfo {
             this.num = num;
             this.name = name;
         }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+        
         public static MOVE_TYPE fromNum(int i) {
             for(MOVE_TYPE type : MOVE_TYPE.values()) {
                 if (type.num == i) {
+                    return type;
+                }
+            }
+            return null;
+        }
+
+        public static MOVE_TYPE fromString(String s) {
+            for(MOVE_TYPE type : MOVE_TYPE.values()) {
+                if (type.name.equals(s)) {
                     return type;
                 }
             }
@@ -99,6 +121,42 @@ public class MarkerInfo {
     }
     public void setTransform(float[] transform) {
         this.transform = transform;
+    }
+
+    public JSONObject toJSON() throws JSONException {
+        JSONObject obj = new JSONObject();
+        obj.put(HOLD_JSON_KEY,holdType == null ? "" : holdType.toString());
+        obj.put(MOVE_JSON_KEY,moveType == null ? "" : moveType.toString());
+        obj.put(DESC_JSON_KEY,details);
+        obj.put(X_JSON_KEY,transform[0]);
+        obj.put(Y_JSON_KEY,transform[1]);
+        obj.put(Z_JSON_KEY,transform[2]);
+
+        return obj;
+    }
+
+    public static ArrayList<MarkerInfo> MarkersFromJson(String markersJson) throws JSONException {
+        JSONArray jsonArray = new JSONArray(markersJson);
+        ArrayList<MarkerInfo> list = new ArrayList<>();
+        for (int i=0;i<jsonArray.length();i++) {
+            JSONObject obj = (JSONObject) jsonArray.get(i);
+            MarkerInfo.HOLD_TYPE hold = MarkerInfo.HOLD_TYPE.fromString(
+                    obj.getString(MarkerInfo.HOLD_JSON_KEY));
+            MarkerInfo.MOVE_TYPE move = MarkerInfo.MOVE_TYPE.fromString(
+                    obj.getString(MarkerInfo.MOVE_JSON_KEY));
+            String description = obj.getString(MarkerInfo.DESC_JSON_KEY);
+            float x = (float) obj.getDouble(MarkerInfo.X_JSON_KEY);
+            float y = (float) obj.getDouble(MarkerInfo.Y_JSON_KEY);
+            float z = (float) obj.getDouble(MarkerInfo.Z_JSON_KEY);
+
+            MarkerInfo marker = new MarkerInfo();
+            marker.setHoldType(hold);
+            marker.setMoveType(move);
+            marker.setDetails(description);
+            marker.setTransform(new float[]{x,y,z});
+            list.add(marker);
+        }
+        return list;
     }
 
     /*public class MarkerTransform {

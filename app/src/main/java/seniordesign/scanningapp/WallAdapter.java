@@ -51,7 +51,7 @@ public class WallAdapter extends BaseAdapter{
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(mContext, ViewerActivity.class);
+                Intent intent = new Intent(mContext, RouteActivity.class);
                 intent.putExtra(WallActivity.FOLDER_NAME_KEY, wall.modelFileName);
                 intent.putExtra(WallActivity.WALL_NAME_KEY, wall.name);
                 mContext.startActivity(intent);
