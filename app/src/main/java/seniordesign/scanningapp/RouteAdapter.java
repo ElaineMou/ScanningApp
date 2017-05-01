@@ -8,6 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.TextView;
 
 import org.json.JSONException;
@@ -54,10 +55,15 @@ public class RouteAdapter extends BaseAdapter {
                     getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             view = inflater.inflate(R.layout.route_list_item, null, true);
         }
-        TextView routeNameView = (TextView) view.findViewById(R.id.route_name);
+        TextView textView = (TextView) view.findViewById(R.id.route_name);
         final Route route = routes.get(i);
-        routeNameView.setText(route.getName());
-        view.setOnClickListener(new View.OnClickListener() {
+        textView.setText(route.getName());
+        textView = (TextView) view.findViewById(R.id.difficulty_textbox);
+        textView.setText(route.getDifficulty());
+        textView = (TextView) view.findViewById(R.id.description_textbox);
+        textView.setText(route.getDescription());
+        Button button = (Button) view.findViewById(R.id.edit_button);
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(mContext, ViewerActivity.class);
@@ -74,9 +80,10 @@ public class RouteAdapter extends BaseAdapter {
                 mContext.startActivity(intent);
             }
         });
-        view.setOnLongClickListener(new View.OnLongClickListener() {
+        button = (Button) view.findViewById(R.id.delete_button);
+        button.setOnClickListener(new View.OnClickListener() {
             @Override
-            public boolean onLongClick(View view) {
+            public void onClick(View view) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
                 String routeName = route.getName();
                 builder.setTitle("Delete " + routeName + "?")
@@ -93,7 +100,15 @@ public class RouteAdapter extends BaseAdapter {
                             }
                         });
                 builder.create().show();
-                return false;
+            }
+        });
+        button = (Button) view.findViewById(R.id.ar_button);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(mContext, AugmentedRealityActivity.class);
+                intent.putExtra(WallActivity.FOLDER_NAME_KEY, wallFolderName);
+                mContext.startActivity(intent);
             }
         });
         return view;

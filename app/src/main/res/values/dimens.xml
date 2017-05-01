@@ -6,5 +6,10 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="dialog_edit_margin">5dp</dimen>
     <dimen name="hold_header_font_size">20sp</dimen>
+    <dimen name="button_size">40dp</dimen>
+    <dimen name="difficulty_font_size">20sp</dimen>
+    <dimen name="list_text_margin_horiz">16dp</dimen>
+    <dimen name="list_text_margin_vert">6dp</dimen>
+    <dimen name="button_margin">5dp</dimen>
 
 </resources>

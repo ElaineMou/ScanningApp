@@ -287,10 +287,14 @@ public class AugmentedRealityActivity extends Activity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                String path = Environment.getExternalStorageDirectory().getPath() + "/Models/";
+                /*String path = Environment.getExternalStorageDirectory().getPath() + "/Models/";
                 String fileName = getIntent().getStringExtra(FileActivity.FILE_NAME_KEY);
-                File file = new File(path,fileName);
-                JNINative.loadAugmentedReality(file.toString());
+                File file = new File(path,fileName);*/
+                File root = getFilesDir();
+                String modelFolder = getIntent().getStringExtra(WallActivity.FOLDER_NAME_KEY);
+                File dir = new File(root, modelFolder);
+                File file = new File(dir, WallActivity.WALL_MODEL_NAME);
+                JNINative.loadAugmentedReality(file.getPath());
             }
         }).start();
 
