@@ -17,6 +17,7 @@
 #include <tango-gl/conversions.h>
 #include <tango-gl/shaders.h>
 #include <tango-gl/tango-gl.h>
+#include <tango-gl/meshes.h>
 
 #include "tango-augmented-reality/viewer_scene.h"
 
@@ -44,7 +45,7 @@ namespace tango_augmented_reality {
                 tango_gl::shaders::GetTexturedFragmentShader().c_str());
         marker_material->SetParam("texture", marker_texture);
 
-
+        marker_bounding_box = tango_gl::meshes::MakeCubeMesh(0.3f);
         chosen_marker_material = new tango_gl::Material();
         chosen_marker_texture = new tango_gl::Texture(aAssetManager, "chosenblock.png");
         chosen_marker_material->SetShader(
@@ -61,6 +62,17 @@ namespace tango_augmented_reality {
         color_vertex_shader = nullptr;
         delete textured_shader;
         textured_shader = nullptr;
+
+        delete marker_material;
+        marker_material = nullptr;
+        delete marker_texture;
+        marker_texture = nullptr;
+        delete marker_bounding_box;
+        marker_bounding_box = nullptr;
+        delete chosen_marker_material;
+        chosen_marker_material = nullptr;
+        delete chosen_marker_texture;
+        chosen_marker_texture = nullptr;
 
         static_meshes_.clear();
         for(std::vector<tango_gl::Transform*>::iterator it = static_mesh_transforms_.begin();it!=static_mesh_transforms_.end();it++) {

@@ -7,8 +7,14 @@ import java.util.ArrayList;
  */
 
 public class Route {
+    public static final String NAME_JSON_KEY = "name";
+    public static final String DIFFICULTY_JSON_KEY = "difficulty";
+    public static final String DESCRIPTION_JSON_KEY = "description";
+    public static final String MARKERS_JSON_KEY = "markers";
+
     private String name;
     private String difficulty;
+    private String description;
     private ArrayList<MarkerInfo> markers;
 
     public Route(String name, String difficulty) {
@@ -35,5 +41,13 @@ public class Route {
     public void setMarkers(ArrayList<MarkerInfo> markers) {
         this.markers = markers;
     }
+    public String getMarkersString() {return "";}
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 }

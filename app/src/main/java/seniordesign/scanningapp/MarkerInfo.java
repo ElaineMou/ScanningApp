@@ -1,10 +1,17 @@
 package seniordesign.scanningapp;
 
+import org.json.JSONObject;
+
 /**
  * Created by Elaine on 4/27/2017.
  */
 
 public class MarkerInfo {
+    public static final String HOLD_JSON_KEY = "hold";
+    public static final String MOVE_JSON_KEY = "move";
+    public static final String DESC_JSON_KEY = "description";
+    public static final String TRANSFORM_JSON_KEY = "transform";
+
     public enum HOLD_TYPE {
         CRIMP(1, "Crimp"), EDGE(2, "Edge"), JUG(3, "Jug"), PINCH(4, "Pinch"), POCKET(5, "Pocket"),
         SLOPER(6, "Sloper"), UNDERCLING(7, "Undercling"), FINGER_CRACK(8, "Finger Crack"),
@@ -12,7 +19,6 @@ public class MarkerInfo {
 
         private int num;
         private String name;
-        private MarkerTransform transform;
 
         @Override
         public String toString() {
@@ -26,6 +32,14 @@ public class MarkerInfo {
         public static HOLD_TYPE fromNum(int i) {
             for(HOLD_TYPE type : HOLD_TYPE.values()) {
                 if (type.num == i) {
+                    return type;
+                }
+            }
+            return null;
+        }
+        public static HOLD_TYPE fromString(String s) {
+            for(HOLD_TYPE type : HOLD_TYPE.values()) {
+                if (type.name == s) {
                     return type;
                 }
             }
@@ -60,6 +74,7 @@ public class MarkerInfo {
     private HOLD_TYPE holdType;
     private MOVE_TYPE moveType;
     private String details;
+    private float[] transform;
 
     public HOLD_TYPE getHoldType() {
         return holdType;
@@ -79,10 +94,31 @@ public class MarkerInfo {
     public void setDetails(String det){
         this.details = det;
     }
+    public float[] getTransform() {
+        return transform;
+    }
+    public void setTransform(float[] transform) {
+        this.transform = transform;
+    }
 
-    private class MarkerTransform {
+    /*public class MarkerTransform {
+        public static final String POSITION_JSON_KEY = "position";
+        public static final String ROTATION_JSON_KEY = "rotation";
+        public static final String SCALE_JSON_KEY = "scale";
         float position[];
         float rotation[];
         float scale[];
-    }
+
+        MarkerTransform(float[] pos, float[] rot, float[] scale) {
+            this.position = pos;
+            this.rotation = rot;
+            this.scale = scale;
+        }
+
+        JSONObject toJson() {
+            JSONObject obj = new JSONObject();
+
+            return obj;
+        }
+    }*/
 }

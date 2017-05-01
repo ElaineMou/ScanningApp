@@ -109,7 +109,7 @@ class ViewerApp {
 
 private:
         // Request the render function from Java layer.
-        void RequestReturnFromPlaceMarker();
+        void RequestReturnFromPlaceMarker(glm::vec3 position);
 
         void RequestShowMarkerAt(int index);
 

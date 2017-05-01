@@ -53,6 +53,7 @@ public class WallAdapter extends BaseAdapter{
             public void onClick(View view) {
                 Intent intent = new Intent(mContext, ViewerActivity.class);
                 intent.putExtra(WallActivity.FOLDER_NAME_KEY, wall.modelFileName);
+                intent.putExtra(WallActivity.WALL_NAME_KEY, wall.name);
                 mContext.startActivity(intent);
             }
         });

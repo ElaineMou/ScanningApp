@@ -86,8 +86,8 @@ public class AugmentedRealityActivity extends Activity {
             }
 
             // The following code block does setup and connection to Tango.
-            TangoJNINative.onTangoServiceConnectedAugmentedReality(service, res, dmin, dmax, noise, land, photo, txt);
-            //TangoJNINative.setView(0, 0, 0, 0, true);
+            JNINative.onTangoServiceConnectedAugmentedReality(service, res, dmin, dmax, noise, land, photo, txt);
+            //JNINative.setView(0, 0, 0, 0, true);
         }
 
         @Override
@@ -105,7 +105,7 @@ public class AugmentedRealityActivity extends Activity {
         Display display = windowManager.getDefaultDisplay();
         display.getSize(mScreenSize);
 
-        TangoJNINative.onCreateAugmentedReality(this, display.getRotation());
+        JNINative.onCreateAugmentedReality(this, display.getRotation());
 
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
@@ -137,7 +137,7 @@ public class AugmentedRealityActivity extends Activity {
             public void onProgressChanged(SeekBar seekBar, int value, boolean byUser)
             {
                 mPitch = (float) Math.toRadians(-(value - .5*seekBar.getMax()));
-                TangoJNINative.setViewAugmentedReality(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
+                JNINative.setViewAugmentedReality(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
             }
 
             @Override
@@ -159,7 +159,7 @@ public class AugmentedRealityActivity extends Activity {
             public void onProgressChanged(SeekBar seekBar, int value, boolean byUser)
             {
                 mYaw = (float) Math.toRadians(-(value - .5*seekBar.getMax()));
-                TangoJNINative.setViewAugmentedReality(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
+                JNINative.setViewAugmentedReality(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
             }
 
             @Override
@@ -181,7 +181,7 @@ public class AugmentedRealityActivity extends Activity {
             public void onProgressChanged(SeekBar seekBar, int value, boolean byUser)
             {
                 mRoll = (float) Math.toRadians(-(value - .5*seekBar.getMax()));
-                TangoJNINative.setViewAugmentedReality(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
+                JNINative.setViewAugmentedReality(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
             }
 
             @Override
@@ -204,14 +204,14 @@ public class AugmentedRealityActivity extends Activity {
                 float f = getMoveFactor();
                 mMoveX += dx * f * Math.cos( angle ) + dy * f * Math.sin( angle );
                 mMoveY += dx * f * Math.sin( angle ) + dy * f * Math.cos( angle );
-                TangoJNINative.setViewAugmentedReality(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
+                JNINative.setViewAugmentedReality(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
             }
 
             @Override
             public void OnRotation(float angle)
             {
                 mYaw = (float) Math.toRadians(-angle);
-                TangoJNINative.setViewAugmentedReality(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
+                JNINative.setViewAugmentedReality(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
             }
 
             @Override
@@ -223,7 +223,7 @@ public class AugmentedRealityActivity extends Activity {
                     mZoom = min;
                 if(mZoom > 10)
                     mZoom = 10;
-                TangoJNINative.setZoomAugmentedReality(mZoom);
+                JNINative.setZoomAugmentedReality(mZoom);
             }
         }, this);
 
@@ -240,7 +240,7 @@ public class AugmentedRealityActivity extends Activity {
 
             @Override
             public boolean onSingleTapUp(MotionEvent motionEvent) {
-                //TangoJNINative.handleTouchViewer(motionEvent.getX(),motionEvent.getY());
+                //JNINative.handleTouchViewer(motionEvent.getX(),motionEvent.getY());
                 return false;
             }
 
@@ -267,14 +267,14 @@ public class AugmentedRealityActivity extends Activity {
         super.onPause();
         mGLView.onPause();
 
-        TangoJNINative.onPauseAugmentedReality();
+        JNINative.onPauseAugmentedReality();
         unbindService(mTangoServiceConnection);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        TangoJNINative.onDestroyAugmentedReality();
+        JNINative.onDestroyAugmentedReality();
     }
 
     @Override
@@ -290,7 +290,7 @@ public class AugmentedRealityActivity extends Activity {
                 String path = Environment.getExternalStorageDirectory().getPath() + "/Models/";
                 String fileName = getIntent().getStringExtra(FileActivity.FILE_NAME_KEY);
                 File file = new File(path,fileName);
-                TangoJNINative.loadAugmentedReality(file.toString());
+                JNINative.loadAugmentedReality(file.toString());
             }
         }).start();
 
@@ -312,7 +312,7 @@ public class AugmentedRealityActivity extends Activity {
         Display display = windowManager.getDefaultDisplay();
         display.getSize(mScreenSize);
 
-        TangoJNINative.onConfigurationChangedAugmentedReality(display.getRotation());
+        JNINative.onConfigurationChangedAugmentedReality(display.getRotation());
     }
 
     private float getMoveFactor()

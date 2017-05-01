@@ -24,13 +24,13 @@ import android.util.Log;
 /**
  * Interfaces between native C++ code and Java code.
  */
-public class TangoJNINative {
+public class JNINative {
     static {
         // This project depends on tango_client_api, so we need to make sure we loadAugmentedReality
         // the correct library first.
         if (TangoInitializationHelper.loadTangoSharedLibrary() ==
                 TangoInitializationHelper.ARCH_ERROR) {
-            Log.e("TangoJNINative", "ERROR! Unable to loadAugmentedReality libtango_client_api.so!");
+            Log.e("JNINative", "ERROR! Unable to loadAugmentedReality libtango_client_api.so!");
         }
         System.loadLibrary("scanningapp");
     }

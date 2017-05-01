@@ -1,7 +1,6 @@
 package seniordesign.scanningapp;
 
 import android.app.Activity;
-import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.ListView;
@@ -13,14 +12,11 @@ import org.json.JSONObject;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 import static seniordesign.scanningapp.FileActivity.FILE_EXT;
-import static seniordesign.scanningapp.FileActivity.FILE_NAME_KEY;
 
 /**
  * Created by Elaine on 4/28/2017.
@@ -28,13 +24,9 @@ import static seniordesign.scanningapp.FileActivity.FILE_NAME_KEY;
 
 public class WallActivity extends Activity {
     public static String FOLDER_NAME_KEY = "wallFileNameKey";
+    public static String WALL_NAME_KEY = "wallNameKey";
     public static final String WALLS_LIST_NAME = "walls.json";
     public static final String WALL_MODEL_NAME = "model.ply";
-    public static final String WALLS_LIST_JSON_KEY = "wallsList";
-    public static final String WALL_NAME_JSON_KEY = "wallName";
-    public static final String WALL_FOLDER_JSON_KEY = "wallFolder";
-    public static final String WALL_LAT_JSON_KEY = "wallLat";
-    public static final String WALL_LONG_JSON_KEY = "wallLong";
     private File FILE_LOCATION;
     private ArrayList<Wall> walls = new ArrayList<>();
     String string = "{\n" +
@@ -114,13 +106,13 @@ public class WallActivity extends Activity {
                 }
                 bufferedReader.close();
                 JSONObject jsonObject = new JSONObject(sb.toString());
-                JSONArray wallsList = jsonObject.getJSONArray(WALLS_LIST_JSON_KEY);
+                JSONArray wallsList = jsonObject.getJSONArray(Wall.WALLS_LIST_JSON_KEY);
                 for(int i=0;i<wallsList.length();i++) {
                     JSONObject wall = wallsList.getJSONObject(i);
-                    String wallName = wall.getString(WALL_NAME_JSON_KEY);
-                    String wallFolder = wall.getString(WALL_FOLDER_JSON_KEY);
-                    double wallLat = wall.getDouble(WALL_LAT_JSON_KEY);
-                    double wallLong = wall.getDouble(WALL_LONG_JSON_KEY);
+                    String wallName = wall.getString(Wall.NAME_JSON_KEY);
+                    String wallFolder = wall.getString(Wall.FOLDER_JSON_KEY);
+                    double wallLat = wall.getDouble(Wall.LAT_JSON_KEY);
+                    double wallLong = wall.getDouble(Wall.LONG_JSON_KEY);
                     File folderFile = new File(FILE_LOCATION, wallFolder);
                     if (folderFile.exists()) {
                         walls.add(new Wall(wallName, wallFolder, new double[]{wallLat, wallLat}));

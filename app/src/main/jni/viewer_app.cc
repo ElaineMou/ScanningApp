@@ -52,18 +52,18 @@ namespace tango_augmented_reality {
                                        int display_rotation) {
 
         int version;
-        TangoErrorType err = TangoSupport_GetTangoVersion(env, activity, &version);
+        /*TangoErrorType err = TangoSupport_GetTangoVersion(env, activity, &version);
         if (err != TANGO_SUCCESS || version < kTangoCoreMinimumVersion) {
             LOGE("ViewerApp::OnCreate, Tango Core version is out of date.");
             std::exit(EXIT_SUCCESS);
-        }
+        }*/
 
         // We want to be able to trigger rendering on demand in our Java code.
         // As such, we need to store the activity we'd like to interact with and the
         // id of the method we'd like to call on that activity.
         calling_activity_obj_ = env->NewGlobalRef(activity);
         jclass cls = env->GetObjectClass(activity);
-        on_demand_return_place_marker = env->GetMethodID(cls, "returnFromPlacingMarker", "()V");
+        on_demand_return_place_marker = env->GetMethodID(cls, "returnFromPlacingMarker", "(FFF)V");
         on_demand_show_marker_info = env->GetMethodID(cls, "showMarkerInfo", "(I)V");
 
         is_service_connected_ = false;
@@ -86,7 +86,7 @@ namespace tango_augmented_reality {
         else
             scale = 1;
 
-        TangoErrorType ret = TangoService_setBinder(env, iBinder);
+        /*TangoErrorType ret = TangoService_setBinder(env, iBinder);
         if (ret != TANGO_SUCCESS) {
             LOGE(
                     "AugmentedRealityApp: Failed to set Tango binder with"
@@ -95,7 +95,7 @@ namespace tango_augmented_reality {
             std::exit(EXIT_SUCCESS);
         }
         TangoSetupConfig();
-        TangoConnect();
+        TangoConnect();*/
 
         is_service_connected_ = true;
 
@@ -196,9 +196,9 @@ namespace tango_augmented_reality {
         is_service_connected_ = false;
         is_gl_initialized_ = false;
         is_video_overlay_rotation_set_ = false;
-        TangoConfig_free(tango_config_);
+        //TangoConfig_free(tango_config_);
         tango_config_ = nullptr;
-        TangoService_disconnect();
+        //TangoService_disconnect();
     }
 
     void ViewerApp::OnSurfaceCreated() {
@@ -269,7 +269,9 @@ namespace tango_augmented_reality {
         if(is_adding_markers) {
             if (AddMarker(x,y)) {
                 is_adding_markers = false;
-                RequestReturnFromPlaceMarker();
+                tango_gl::Transform* transform = main_scene_.marker_mesh_transforms_.at(
+                                main_scene_.marker_mesh_transforms_.size()-1);
+                RequestReturnFromPlaceMarker(transform->GetPosition());
             }
         } else if (main_scene_.showMarkers) {
             CheckForMarkerTouch(x,y);
@@ -360,9 +362,10 @@ namespace tango_augmented_reality {
         pos = pos + dir*500.0f;
         float time = 0.0f;
         bool intersect = false;
-        int index = 0;
+        int index;
+        tango_gl::StaticMesh *& mesh = main_scene_.marker_bounding_box;
 
-        for(tango_gl::StaticMesh *& mesh : main_scene_.marker_meshes_) {
+        for(index=0;index<main_scene_.marker_mesh_transforms_.size();index++) {
             for(int i=0;i+2<mesh->indices.size();i+=3) {
                 glm::vec3 v0 = mesh->vertices[mesh->indices[i]];
                 glm::vec3 v1 = mesh->vertices[mesh->indices[i+1]];
@@ -379,7 +382,6 @@ namespace tango_augmented_reality {
             if (intersect) {
                 break;
             }
-            index++;
         }
 
         if (intersect) {
@@ -398,7 +400,7 @@ namespace tango_augmented_reality {
         return tango_core_version_string_.c_str();
     }
 
-    void ViewerApp::RequestReturnFromPlaceMarker() {
+    void ViewerApp::RequestReturnFromPlaceMarker(glm::vec3 position) {
         if (calling_activity_obj_ == nullptr || on_demand_return_place_marker == nullptr) {
             LOGE("Can not reference Activity to request setting adding to false");
             return;
@@ -407,7 +409,8 @@ namespace tango_augmented_reality {
         // Here, we notify the Java activity that we'd like it to trigger a render.
         JNIEnv* env;
         java_vm_->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
-        env->CallVoidMethod(calling_activity_obj_, on_demand_return_place_marker);
+        env->CallVoidMethod(calling_activity_obj_, on_demand_return_place_marker,
+                            position[0],position[1],position[2]);
     }
 
     void ViewerApp::RequestShowMarkerAt(int index) {
@@ -551,6 +554,8 @@ namespace tango_augmented_reality {
     void ViewerApp::removeMarkerAt(int i) {
         if(main_scene_.chosenMarkerIndex > i) {
             main_scene_.chosenMarkerIndex--;
+        } else if (main_scene_.chosenMarkerIndex == i) {
+            main_scene_.chosenMarkerIndex = -1;
         }
         main_scene_.marker_meshes_.erase(main_scene_.marker_meshes_.begin() + i);
         main_scene_.marker_mesh_transforms_.erase(main_scene_.marker_mesh_transforms_.begin() + i);

@@ -5,6 +5,12 @@ package seniordesign.scanningapp;
  */
 
 public class Wall {
+    public static final String WALLS_LIST_JSON_KEY = "wallsList";
+    public static final String NAME_JSON_KEY = "wallName";
+    public static final String FOLDER_JSON_KEY = "wallFolder";
+    public static final String LAT_JSON_KEY = "wallLat";
+    public static final String LONG_JSON_KEY = "wallLong";
+
     public final String name;
     public final String modelFileName;
     public final double[] geo;
