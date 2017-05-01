@@ -75,6 +75,7 @@ JNIEXPORT void JNICALL
 Java_seniordesign_scanningapp_JNINative_onGlSurfaceCreatedAugmentedReality(
     JNIEnv* env, jobject, jobject j_asset_manager) {
   AAssetManager* aasset_manager = AAssetManager_fromJava(env, j_asset_manager);
+  augmentedRealityApp.SetAAssetManager(aasset_manager);
   augmentedRealityApp.OnSurfaceCreated();
 }
 
@@ -117,6 +118,14 @@ Java_seniordesign_scanningapp_JNINative_setZoomAugmentedReality(JNIEnv *env, jcl
 
   augmentedRealityApp.SetZoom(mZoom);
 }
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_JNINative_renderMarkerAugmentedReality(JNIEnv *env, jclass type,
+                                                                     jfloat x, jfloat y, jfloat z) {
+    augmentedRealityApp.AddMarkerToScene(x,y,z);
+}
+
+
 
 JNIEXPORT void JNICALL
 Java_seniordesign_scanningapp_JNINative_onCreateViewer(

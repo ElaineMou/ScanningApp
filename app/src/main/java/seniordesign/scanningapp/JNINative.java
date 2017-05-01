@@ -149,6 +149,8 @@ public class JNINative {
 
     public static native void setZoomAugmentedReality(float mZoom);
 
+    public static native void renderMarkerAugmentedReality(float x, float y, float z);
+
     public static native void setMarkersVisibleViewer(boolean b);
 
     public static native void setAddingMarkersViewer(boolean b);
@@ -158,4 +160,5 @@ public class JNINative {
     public static native void renderMarkerViewer(float x, float y, float z);
 
     public static native void moveCameraViewer(float factor, float dX, float dY);
+
 }

@@ -108,6 +108,11 @@ public class RouteAdapter extends BaseAdapter {
             public void onClick(View view) {
                 Intent intent = new Intent(mContext, AugmentedRealityActivity.class);
                 intent.putExtra(WallActivity.FOLDER_NAME_KEY, wallFolderName);
+                try {
+                    intent.putExtra(RouteActivity.ROUTE_MARKERS_KEY,route.getMarkersAsJson().toString());
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 mContext.startActivity(intent);
             }
         });

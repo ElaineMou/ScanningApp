@@ -97,6 +97,7 @@ class AugmentedRealityScene {
 
   void UpdateFrustum(glm::vec3 pos, float zoom);
 
+  AAssetManager* aAssetManager;
   // Camera object that allows user to use touch input to interact with.
   tango_gl::Camera* camera_;
   tango_gl::StaticMesh frustum_;
@@ -107,6 +108,16 @@ class AugmentedRealityScene {
   tango_gl::Material* color_vertex_shader;
   tango_gl::Material* textured_shader;
   tango_gl::Transform object_transform;
+
+  std::vector<tango_gl::StaticMesh*> marker_meshes_;
+  std::vector<tango_gl::Transform*> marker_mesh_transforms_;
+  tango_gl::Material* marker_material;
+  tango_gl::Texture* marker_texture;
+  tango_gl::Material* chosen_marker_material;
+  tango_gl::Texture* chosen_marker_texture;
+  tango_gl::StaticMesh* marker_bounding_box;
+  bool showMarkers = true;
+  int chosenMarkerIndex = -1;
 
 private:
   // Video overlay drawable object to display the camera image.

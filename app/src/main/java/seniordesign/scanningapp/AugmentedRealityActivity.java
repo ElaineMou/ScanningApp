@@ -33,7 +33,10 @@ import android.view.MotionEvent;
 import android.view.WindowManager;
 import android.widget.SeekBar;
 
+import org.json.JSONException;
+
 import java.io.File;
+import java.util.ArrayList;
 
 /**
  * The main activity of the application which shows debug information and a
@@ -62,6 +65,8 @@ public class AugmentedRealityActivity extends Activity {
     private float mRoll = 0;
     private float mYaw = 0;
     private float mZoom = 5;
+
+    private ArrayList<MarkerInfo> markerList = new ArrayList<>();
 
     // Tango Service connection.
     ServiceConnection mTangoServiceConnection = new ServiceConnection() {
@@ -127,8 +132,6 @@ public class AugmentedRealityActivity extends Activity {
         mRenderer = new AugmentedRealityRenderer(getAssets());
         mGLView.setRenderer(mRenderer);
 
-
-
         topSeekBar = (SeekBar) findViewById(R.id.top_seekBar);
         topSeekBar.setProgress((int)(.5*topSeekBar.getMax()));
         topSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener()
@@ -136,7 +139,7 @@ public class AugmentedRealityActivity extends Activity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int value, boolean byUser)
             {
-                mPitch = (float) Math.toRadians(-(value - .5*seekBar.getMax()));
+                mRoll = (float) Math.toRadians(-(value - .5*seekBar.getMax()));
                 JNINative.setViewAugmentedReality(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
             }
 
@@ -180,7 +183,7 @@ public class AugmentedRealityActivity extends Activity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int value, boolean byUser)
             {
-                mRoll = (float) Math.toRadians(-(value - .5*seekBar.getMax()));
+                mPitch = (float) Math.toRadians(-(value - .5*seekBar.getMax()));
                 JNINative.setViewAugmentedReality(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
             }
 
@@ -283,6 +286,18 @@ public class AugmentedRealityActivity extends Activity {
         mGLView.onResume();
 
         mGLView.setRenderMode(GLSurfaceView.RENDERMODE_CONTINUOUSLY);
+
+        String markersString = getIntent().getStringExtra(RouteActivity.ROUTE_MARKERS_KEY);
+        if(markersString!=null) {
+            try {
+                markerList = MarkerInfo.MarkersFromJson(markersString);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            for(MarkerInfo info : markerList) {
+                JNINative.renderMarkerAugmentedReality(info.getTransform()[0],info.getTransform()[1],info.getTransform()[2]);
+            }
+        }
 
         new Thread(new Runnable() {
             @Override

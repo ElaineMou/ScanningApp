@@ -197,13 +197,13 @@ void AugmentedRealityApp::TangoSetupConfig() {
   }
 
   // Enable depth.
-  /*ret = TangoConfig_setBool(tango_config_, "config_enable_depth", true);
+  ret = TangoConfig_setBool(tango_config_, "config_enable_depth", true);
   if (ret != TANGO_SUCCESS) {
     LOGE("AugmentedRealityApp: config_enable_depth() failed with error"
                     "code: %d",
             ret);
     std::exit(EXIT_SUCCESS);
-  }*/
+  }
 
   // Low latency IMU integration enables aggressive integration of the latest
   // inertial measurements to provide lower latency pose estimates. This will
@@ -594,4 +594,13 @@ void AugmentedRealityApp::FormatTransformString() {
   transform_string_ = string_stream.str();
   string_stream.flush();
 }
+
+void AugmentedRealityApp::AddMarkerToScene(float x, float y, float z) {
+  tango_gl::StaticMesh* marker_mesh = tango_gl::meshes::MakeCubeMesh(0.2f);
+  main_scene_.marker_meshes_.push_back(marker_mesh);
+  tango_gl::Transform* transform = new tango_gl::Transform();
+  transform->SetPosition(glm::vec3(x,y,z));
+  main_scene_.marker_mesh_transforms_.push_back(transform);
+}
+
 }  // namespace tango_augmented_reality

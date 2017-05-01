@@ -59,6 +59,22 @@ void AugmentedRealityScene::InitGLContent() {
                              tango_gl::shaders::GetTexturedFragmentShader().c_str());
 
   object_transform.SetPosition(glm::vec3(0.0f, 0.0f, -5.0f));
+
+  marker_material = new tango_gl::Material();
+  marker_texture = new tango_gl::Texture(aAssetManager, "block.png");
+  marker_material->SetShader(
+          tango_gl::shaders::GetTexturedVertexShader().c_str(),
+          tango_gl::shaders::GetTexturedFragmentShader().c_str());
+  marker_material->SetParam("texture", marker_texture);
+
+  marker_bounding_box = tango_gl::meshes::MakeCubeMesh(0.3f);
+  chosen_marker_material = new tango_gl::Material();
+  chosen_marker_texture = new tango_gl::Texture(aAssetManager, "chosenblock.png");
+  chosen_marker_material->SetShader(
+          tango_gl::shaders::GetTexturedVertexShader().c_str(),
+          tango_gl::shaders::GetTexturedFragmentShader().c_str());
+  chosen_marker_material->SetParam("texture", chosen_marker_texture);
+
   is_content_initialized_ = true;
 }
 
@@ -73,6 +89,28 @@ void AugmentedRealityScene::DeleteResources() {
     color_vertex_shader = nullptr;
     delete textured_shader;
     textured_shader = nullptr;
+
+    delete marker_material;
+    marker_material = nullptr;
+    delete marker_texture;
+    marker_texture = nullptr;
+    delete marker_bounding_box;
+    marker_bounding_box = nullptr;
+    delete chosen_marker_material;
+    chosen_marker_material = nullptr;
+    delete chosen_marker_texture;
+    chosen_marker_texture = nullptr;
+
+    for(std::vector<tango_gl::StaticMesh*>::iterator it = marker_meshes_.begin();it!=marker_meshes_.end();it++) {
+      delete *it;
+    }
+    marker_meshes_.clear();
+
+    for(std::vector<tango_gl::Transform*>::iterator it = marker_mesh_transforms_.begin();it!=marker_mesh_transforms_.end();it++) {
+      delete *it;
+    }
+    marker_mesh_transforms_.clear();
+
 
     static_meshes_.clear();
 
@@ -134,6 +172,20 @@ void AugmentedRealityScene::Render(bool frustum, const glm::mat4& cur_pose_trans
   if (!frustum_.vertices.empty() && frustum) {
     tango_gl::Render(frustum_, *color_vertex_shader, object_transform, *camera_,
                      (const int) frustum_.indices.size());
+  }
+
+  if(showMarkers) {
+    for (int i = 0; i < marker_meshes_.size(); i++) {
+      tango_gl::StaticMesh *mesh = marker_meshes_.at(i);
+      tango_gl::Transform *transform = marker_mesh_transforms_.at(i);
+      if(i != chosenMarkerIndex) {
+        tango_gl::Render(*mesh, *marker_material, *transform, *camera_,
+                         mesh->indices.size());
+      } else {
+        tango_gl::Render(*mesh, *chosen_marker_material, *transform, *camera_,
+                         mesh->indices.size());
+      }
+    }
   }
 }
 

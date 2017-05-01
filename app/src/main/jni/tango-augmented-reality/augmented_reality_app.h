@@ -123,6 +123,9 @@ class AugmentedRealityApp {
   // @JavaVM java_vm: the Java VM is using from the Java layer.
   void SetJavaVM(JavaVM* java_vm) { java_vm_ = java_vm; }
 
+  void SetAAssetManager(AAssetManager* manager) {
+    main_scene_.aAssetManager = manager;
+  }
   // Called when the device orientation changed
   //
   // @JavaVM display_rotation: orientation of current display.
@@ -145,7 +148,9 @@ class AugmentedRealityApp {
     main_scene_.object_transform.SetScale(glm::vec3(zoom/10,zoom/10,zoom/10));
   }
 
- private:
+  void AddMarkerToScene(float x, float y, float z);
+
+private:
   // Request the render function from Java layer.
   void RequestRender();
 
