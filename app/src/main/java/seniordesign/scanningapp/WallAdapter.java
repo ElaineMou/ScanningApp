@@ -99,9 +99,21 @@ public class WallAdapter extends BaseAdapter{
                                         Log.e("WallAdapter", "From File: " + sb.toString());
                                         JSONObject obj = new JSONObject(sb.toString());
                                         JSONArray wallList = obj.getJSONArray(Wall.WALLS_LIST_JSON_KEY);
-                                        wallList.remove(i);
+                                        JSONObject deletedWall = (JSONObject) wallList.remove(i);
                                         JSONObject newObj = new JSONObject();
                                         newObj.put(Wall.WALLS_LIST_JSON_KEY, wallList);
+
+                                        if(deletedWall!=null) {
+                                            String folder = deletedWall.getString(Wall.FOLDER_JSON_KEY);
+                                            File folderToDelete = new File(FILE_LOCATION,folder);
+                                            if(folderToDelete.isDirectory()) {
+                                                File[] subFiles = folderToDelete.listFiles();
+                                                for(File subFile : subFiles) {
+                                                    subFile.delete();
+                                                }
+                                            }
+                                            folderToDelete.delete();
+                                        }
 
                                         wallsListFile.delete();
                                         wallsListFile.createNewFile();
