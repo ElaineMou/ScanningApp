@@ -90,7 +90,7 @@ AugmentedRealityApp::AugmentedRealityApp() :  t3dr_is_running_(false),
                                               landscape(false),
                                               textured(false),
                                               scale(1),
-                                              zoom(0)
+                                              zoom(5)
 {
 }
 
@@ -118,8 +118,10 @@ void AugmentedRealityApp::OnCreate(JNIEnv* env, jobject activity,
   calling_activity_obj_ = env->NewGlobalRef(activity);
   jclass cls = env->GetObjectClass(activity);
   on_demand_render_ = env->GetMethodID(cls, "requestRender", "()V");
+  on_demand_show_marker_info = env->GetMethodID(cls, "showMarkerInfo", "(I)V");
 
-  is_service_connected_ = false;
+
+    is_service_connected_ = false;
   is_gl_initialized_ = false;
 
   display_rotation_ = display_rotation;
@@ -163,6 +165,7 @@ void AugmentedRealityApp::OnDestroy() {
 
   calling_activity_obj_ = nullptr;
   on_demand_render_ = nullptr;
+  on_demand_show_marker_info = nullptr;
 }
 
 void AugmentedRealityApp::TangoSetupConfig() {
@@ -448,11 +451,9 @@ void AugmentedRealityApp::UpdateViewportAndProjectionMatrix() {
   // }
 
   if (image_plane_ratio < screen_ratio) {
-    main_scene_.SetupViewport(viewport_height_ / image_plane_ratio,
-                              viewport_height_);
+      main_scene_.SetupViewport(viewport_height_ / image_plane_ratio, viewport_height_);
   } else {
-    main_scene_.SetupViewport(viewport_width_,
-                              viewport_width_ * image_plane_ratio);
+      main_scene_.SetupViewport(viewport_width_, viewport_width_ * image_plane_ratio);
   }
 }
 
@@ -601,6 +602,175 @@ void AugmentedRealityApp::AddMarkerToScene(float x, float y, float z) {
   tango_gl::Transform* transform = new tango_gl::Transform();
   transform->SetPosition(glm::vec3(x,y,z));
   main_scene_.marker_mesh_transforms_.push_back(transform);
+    tango_gl::Transform* transform2 = new tango_gl::Transform();
+    main_scene_.combined_marker_transforms_.push_back(transform2);
 }
+
+void AugmentedRealityApp::MoveModel(float f, jfloat dX, jfloat dY) {
+    glm::vec3 cameraPos = main_scene_.camera_->GetPosition();
+    glm::vec3 cameraLookAt = cameraPos +
+                             main_scene_.camera_->GetRotation()*glm::vec3(0.0f,0.0f,10.0f);
+    glm::vec3 view = cameraLookAt - cameraPos;
+    view = glm::normalize(view);
+    glm::vec3 cameraUp = glm::cross(glm::cross(view,glm::vec3(0.0f,1.0f,0.0f)),view);
+    glm::vec3 h = glm::cross(view,cameraUp);
+    h = glm::normalize(h);
+    glm::vec3 v = glm::cross(h,view);
+    v = glm::normalize(v);
+
+    glm::vec3 up = glm::normalize(cameraUp);
+    glm::vec3 left = h;
+    glm::vec3 xyz = main_scene_.object_transform.GetPosition() + left*f*dX + up*f*-dY;
+    main_scene_.object_transform.SetPosition(xyz);
+}
+
+    void AugmentedRealityApp::HandleTouch(float x, float y) {
+        if(main_scene_.showMarkers) {
+            CheckForMarkerTouch(x,y);
+        }
+    }
+
+    void AugmentedRealityApp::CheckForMarkerTouch(float x, float y) {
+        glm::vec3 cameraPos = main_scene_.camera_->GetPosition();
+        glm::vec3 cameraLookAt = cameraPos +
+                                 main_scene_.camera_->GetRotation()*glm::vec3(0.0f,0.0f,10.0f);
+        glm::vec3 view = cameraLookAt - cameraPos;
+        view = glm::normalize(view);
+        glm::vec3 cameraUp = glm::cross(glm::cross(view,glm::vec3(0.0f,1.0f,0.0f)),view);
+        glm::vec3 h = glm::cross(view,cameraUp);
+        h = glm::normalize(h);
+        glm::vec3 v = glm::cross(h,view);
+        v = glm::normalize(v);
+
+        float rad = main_scene_.camera_->GetFov();
+        float vLength = tan(rad/2.0f) * kArCameraNearClippingPlane;
+        float hLength = vLength * (((float)viewport_width_)/viewport_height_);
+        v = v*vLength;
+        h = h*hLength;
+        x = (x-.5f)*2.0f;
+        y = (y-.5f)*2.0f;
+        glm::vec3 pos = cameraPos + view*kArCameraNearClippingPlane + h*x + v*y;
+        glm::vec3 dir = pos - cameraPos;
+        dir = glm::normalize(dir);
+        pos = pos + dir*500.0f;
+        float time = 0.0f;
+        bool intersect = false;
+        int index;
+        tango_gl::StaticMesh *& mesh = main_scene_.marker_bounding_box;
+        glm::vec3 scale = main_scene_.object_transform.GetScale();
+        glm::vec3 trans = main_scene_.object_transform.GetPosition();
+        glm::quat rot = main_scene_.object_transform.GetRotation();
+
+        /*LOGE("Camera at : %f %f %f ", cameraPos[0], cameraPos[1], cameraPos[2]);
+        LOGE("Direction : %f %f %f ", dir[0], dir[1], dir[2]);
+        glm::vec3 posFromModel = cameraPos + dir*1.0f;
+
+
+        mesh = main_scene_.marker_meshes_.at(0);
+        tango_gl::Transform* transform = main_scene_.marker_mesh_transforms_.at(0);
+        glm::vec3 copy = mesh->vertices[mesh->indices[0]];
+        copy = trans + scale*(rot*(transform->GetPosition() + copy));
+        //posFromModel = copy;
+
+        posFromModel = posFromModel - trans;
+        posFromModel = posFromModel/scale[0];
+        posFromModel = glm::inverse(rot)*posFromModel;
+
+        AddMarkerToScene(posFromModel[0],posFromModel[1],posFromModel[2]);*/
+
+
+        for(index=0;index<main_scene_.marker_mesh_transforms_.size();index++) {
+            tango_gl::Transform* transform = main_scene_.marker_mesh_transforms_.at(index);
+            for(int i=0;i+2<mesh->indices.size();i+=3) {
+                glm::vec3 v0 = mesh->vertices[mesh->indices[i]];
+                glm::vec3 v1 = mesh->vertices[mesh->indices[i+1]];
+                glm::vec3 v2 = mesh->vertices[mesh->indices[i+2]];
+
+                v0 = trans + scale*(rot*(transform->GetPosition() + v0));
+                v1 = trans + scale*(rot*(transform->GetPosition() + v1));
+                v2 = trans + scale*(rot*(transform->GetPosition() + v2));
+
+                if (intersect = intersectRayTriangle(cameraPos, dir, v0, v1, v2, time)) {
+                    break;
+                }
+            }
+            if (intersect) {
+                break;
+            }
+        }
+
+        /*glm::vec3 posFromModel;
+
+        for(index=0;index<main_scene_.static_meshes_.size();index++) {
+            tango_gl::StaticMesh& mesh = main_scene_.static_meshes_.at(index);
+            for(int i=0;i+2<mesh.vertices.size();i+=3) {
+                glm::vec3 v0 = trans + scale*(rot*mesh.vertices[i]);
+                glm::vec3 v1 = trans + scale*(rot*mesh.vertices[i+1]);
+                glm::vec3 v2 = trans + scale*(rot*mesh.vertices[i+2]);
+
+                if (intersect = intersectRayTriangle(cameraPos, dir, v0, v1, v2, time)) {
+                    posFromModel = mesh.vertices[i];
+                    break;
+                }
+            }
+            if (intersect) {
+                break;
+            }
+        }
+
+        AddMarkerToScene(posFromModel[0],posFromModel[1],posFromModel[2]);*/
+
+        if (intersect) {
+            main_scene_.chosenMarkerIndex = index;
+            RequestShowMarkerAt(index);
+        }
+
+    }
+
+    bool AugmentedRealityApp::intersectRayTriangle(glm::vec3 origin, glm::vec3 direction, glm::vec3 vert0,
+                                                   glm::vec3 vert1, glm::vec3 vert2, float t) {
+        float eps = 0.000001;
+        glm::vec3 edge1, edge2, tvec, pvec, qvec;
+        float det, inv_det;
+
+        edge1 = vert1 - vert0;
+        edge2 = vert2 - vert0;
+
+        pvec = glm::cross(direction, edge2);
+        det = glm::dot(edge1,pvec);
+        if(det > -eps && det < eps) {
+            return false;
+        }
+        inv_det = 1.0/det;
+
+        tvec = origin - vert0;
+
+        float u = glm::dot(tvec,pvec) * inv_det;
+        if (u<0.0 || u > 1.0) {
+            return false;
+        }
+
+        qvec = glm::cross(tvec,edge1);
+
+        float v = glm::dot(direction,qvec) * inv_det;
+        if (v<0.0 || (u+v) > 1.0) {
+            return false;
+        }
+
+        t = glm::dot(edge2,qvec) * inv_det;
+        return true;
+    }
+
+    void AugmentedRealityApp::RequestShowMarkerAt(int index) {
+        if (calling_activity_obj_ == nullptr || on_demand_show_marker_info == nullptr) {
+            LOGE("Can not reference Activity to request setting adding to false");
+            return;
+        }
+
+        // Here, we notify the Java activity that we'd like it to trigger a render.
+        JNIEnv* env;
+        java_vm_->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
+        env->CallVoidMethod(calling_activity_obj_, on_demand_show_marker_info, index);
+    }
 
 }  // namespace tango_augmented_reality

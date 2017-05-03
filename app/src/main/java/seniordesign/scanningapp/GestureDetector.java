@@ -40,7 +40,9 @@ class GestureDetector
             @Override
             public boolean onScale(ScaleGestureDetector detector) {
                 if (mListener != null)
-                    mListener.OnZoom(detector.getScaleFactor() - 1.0f);
+                    mListener.OnZoom(detector.getScaleFactor() > 0 ?
+                            .5f*(detector.getScaleFactor() - 1.0f) :
+                            .5f*(Math.max(detector.getScaleFactor()-1.0f, 0)));
                 return false;
             }
         });

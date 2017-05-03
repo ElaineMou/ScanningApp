@@ -53,7 +53,7 @@ void AugmentedRealityScene::InitGLContent() {
 
   color_vertex_shader = new tango_gl::Material();
   color_vertex_shader->SetShader(tango_gl::shaders::GetColorVertexShader().c_str(),
-                                 tango_gl::shaders::GetBasicFragmentShader().c_str());
+                                 tango_gl::shaders::GetTransparentFragmentShader().c_str());
   textured_shader = new tango_gl::Material();
   textured_shader->SetShader(tango_gl::shaders::GetTexturedVertexShader().c_str(),
                              tango_gl::shaders::GetTexturedFragmentShader().c_str());
@@ -111,6 +111,12 @@ void AugmentedRealityScene::DeleteResources() {
     }
     marker_mesh_transforms_.clear();
 
+    for(std::vector<tango_gl::Transform*>::iterator it = combined_marker_transforms_.begin();it!=combined_marker_transforms_.end();it++) {
+      delete *it;
+    }
+    combined_marker_transforms_.clear();
+
+
 
     static_meshes_.clear();
 
@@ -147,6 +153,8 @@ void AugmentedRealityScene::Render(bool frustum, const glm::mat4& cur_pose_trans
   glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
   glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA,GL_ONE_MINUS_SRC_ALPHA);
   // In first person mode, we directly control camera's motion.
   camera_->SetTransformationMatrix(cur_pose_transformation);
 
@@ -177,12 +185,19 @@ void AugmentedRealityScene::Render(bool frustum, const glm::mat4& cur_pose_trans
   if(showMarkers) {
     for (int i = 0; i < marker_meshes_.size(); i++) {
       tango_gl::StaticMesh *mesh = marker_meshes_.at(i);
-      tango_gl::Transform *transform = marker_mesh_transforms_.at(i);
+       tango_gl::Transform* combined = combined_marker_transforms_.at(i);
+
+        combined->SetPosition(object_transform.GetPosition() +
+                                     object_transform.GetScale()*
+                                             (object_transform.GetRotation()*
+                                                     marker_mesh_transforms_.at(i)->GetPosition())
+                            );
+        combined->SetScale(object_transform.GetScale());
       if(i != chosenMarkerIndex) {
-        tango_gl::Render(*mesh, *marker_material, *transform, *camera_,
+        tango_gl::Render(*mesh, *marker_material, *combined, *camera_,
                          mesh->indices.size());
       } else {
-        tango_gl::Render(*mesh, *chosen_marker_material, *transform, *camera_,
+        tango_gl::Render(*mesh, *chosen_marker_material, *combined, *camera_,
                          mesh->indices.size());
       }
     }

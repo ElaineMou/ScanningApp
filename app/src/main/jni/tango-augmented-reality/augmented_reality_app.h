@@ -139,16 +139,18 @@ class AugmentedRealityApp {
   void Load(std::string filename);
   //void Save(std::string filename);
   float CenterOfStaticModel(bool horizontal);
-  void SetView(float p, float y, float r, float mx, float my, float mz, bool g) { pitch = p; yaw = y; gyro = g;
-    movex = mx; movey = my; movez = mz, roll = r;
-    main_scene_.object_transform.SetRotation(glm::quat(glm::vec3(yaw,pitch,roll)));
-    main_scene_.object_transform.SetPosition(glm::vec3(movex,movey,movez));}
+  void SetView(float p, float y, float r, bool g) { pitch = p; yaw = y; roll = r; gyro = g;
+    main_scene_.object_transform.SetRotation(glm::quat(glm::vec3(yaw,pitch,roll)));}
   void SetZoom(float value) {
     zoom = value;
-    main_scene_.object_transform.SetScale(glm::vec3(zoom/10,zoom/10,zoom/10));
+    main_scene_.object_transform.SetScale(glm::vec3(zoom,zoom,zoom));
   }
 
   void AddMarkerToScene(float x, float y, float z);
+
+    void MoveModel(float f, jfloat dX, jfloat dY);
+
+    void HandleTouch(float x, float y);
 
 private:
   // Request the render function from Java layer.
@@ -240,6 +242,7 @@ private:
   JavaVM* java_vm_;
   jobject calling_activity_obj_;
   jmethodID on_demand_render_;
+  jmethodID on_demand_show_marker_info;
 
   std::atomic<bool> is_service_connected_;
   std::atomic<bool> is_gl_initialized_;
@@ -251,35 +254,29 @@ private:
   int display_rotation_;
 
   Tango3DR_Context TangoSetup3DR(double res, double dmin, double dmax, int noise);
-  //void MeshUpdate(Tango3DR_ImageBuffer t3dr_image, Tango3DR_GridIndexArray *t3dr_updated);
 
   bool t3dr_is_running_;
-  //Tango3DR_Context t3dr_context_;
   Tango3DR_CameraCalibration t3dr_intrinsics_;
   Tango3DR_CameraCalibration t3dr_intrinsics_depth;
-  //glm::mat4 image_matrix;
-  //glm::quat image_rotation;
   std::mutex binder_mutex_;
   std::mutex render_mutex_;
 
-  //TangoPointCloud* front_cloud_;
-  //glm::mat4 point_cloud_matrix_;
-
   TextureProcessor* textureProcessor;
-  std::vector<TextureProcessor*> toDelete;
-  //std::unordered_map<GridIndex, SingleDynamicMesh*, GridIndexHasher> meshes_;
-  //std::unordered_map<GridIndex, std::vector<SingleDynamicMesh*>, GridIndexHasher> polygonUsage;
   bool gyro;
   bool landscape;
   bool textured;
   float scale;
-  float movex;
-  float movey;
-  float movez;
   float pitch;
   float yaw;
   float roll;
   float zoom;
+
+    void CheckForMarkerTouch(float x, float y);
+
+    bool intersectRayTriangle(glm::vec3 tvec3, glm::vec3 dir, glm::vec3 v0, glm::vec3 v1, glm::vec3 v2,
+                              float time);
+
+    void RequestShowMarkerAt(int index);
 };
 }  // namespace tango_augmented_reality
 

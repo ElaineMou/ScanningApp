@@ -34,7 +34,6 @@ std::string jstring2string(JNIEnv* env, jstring name)
   return str;
 }
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -105,10 +104,9 @@ Java_seniordesign_scanningapp_JNINative_loadAugmentedReality(JNIEnv* env, jobjec
 JNIEXPORT void JNICALL
 Java_seniordesign_scanningapp_JNINative_setViewAugmentedReality(JNIEnv *env, jclass type,
                                                                      jfloat mYaw, jfloat mPitch,
-                                                                     jfloat mRoll, jfloat mMoveX,
-                                                                     jfloat mMoveY, jfloat mMoveZ) {
+                                                                     jfloat mRoll) {
 
-  augmentedRealityApp.SetView(mPitch,mYaw,mRoll,mMoveX,mMoveY,mMoveZ,false);
+  augmentedRealityApp.SetView(mPitch,mYaw,mRoll,false);
 
 }
 
@@ -125,7 +123,19 @@ Java_seniordesign_scanningapp_JNINative_renderMarkerAugmentedReality(JNIEnv *env
     augmentedRealityApp.AddMarkerToScene(x,y,z);
 }
 
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_JNINative_moveModelAugmentedReality(JNIEnv *env, jclass type,
+                                                                   jfloat factor, jfloat dX,
+                                                                   jfloat dY) {
+    augmentedRealityApp.MoveModel(factor,dX,dY);
+}
 
+
+JNIEXPORT void JNICALL
+Java_seniordesign_scanningapp_JNINative_handleTouchAugmentedReality(JNIEnv *env, jclass type,
+                                                                    jfloat x, jfloat y) {
+    augmentedRealityApp.HandleTouch(x,y);
+}
 
 JNIEXPORT void JNICALL
 Java_seniordesign_scanningapp_JNINative_onCreateViewer(

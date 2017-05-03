@@ -111,6 +111,7 @@ class AugmentedRealityScene {
 
   std::vector<tango_gl::StaticMesh*> marker_meshes_;
   std::vector<tango_gl::Transform*> marker_mesh_transforms_;
+  std::vector<tango_gl::Transform*> combined_marker_transforms_;
   tango_gl::Material* marker_material;
   tango_gl::Texture* marker_texture;
   tango_gl::Material* chosen_marker_material;

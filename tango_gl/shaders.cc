@@ -30,6 +30,15 @@ std::string GetBasicVertexShader() {
          "}\n";
 }
 
+std::string GetTransparentFragmentShader() {
+    return "precision mediump float;\n"
+            "varying vec4 v_color;\n"
+            "void main() {\n"
+            "  gl_FragColor = v_color;\n"
+            "  gl_FragColor.a = 0.8;"
+            "}\n";
+}
+
 std::string GetBasicFragmentShader() {
   return "precision mediump float;\n"
          "varying vec4 v_color;\n"

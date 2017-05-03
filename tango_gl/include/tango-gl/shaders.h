@@ -22,6 +22,7 @@
 namespace tango_gl {
 namespace shaders {
 std::string GetBasicVertexShader();
+std::string GetTransparentFragmentShader();
 std::string GetBasicFragmentShader();
 std::string GetTexturedVertexShader();
 std::string GetTexturedFragmentShader();

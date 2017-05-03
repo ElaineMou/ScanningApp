@@ -389,7 +389,6 @@ namespace tango_augmented_reality {
             main_scene_.chosenMarkerIndex = index;
             RequestShowMarkerAt(index);
         }
-
     }
 
     void ViewerApp::AddMarkerToScene(float x,float y,float z) {

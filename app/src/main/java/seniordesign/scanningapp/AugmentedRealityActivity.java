@@ -19,19 +19,24 @@ package seniordesign.scanningapp;
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Point;
 import android.opengl.GLSurfaceView;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
+import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.Display;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.SeekBar;
+import android.widget.TextView;
 
 import org.json.JSONException;
 
@@ -58,9 +63,6 @@ public class AugmentedRealityActivity extends Activity {
 
     private GestureDetector mGestureDetector;
     private android.view.GestureDetector mTapDetector;
-    private float mMoveX = 0;
-    private float mMoveY = 0;
-    private float mMoveZ;
     private float mPitch = 0;
     private float mRoll = 0;
     private float mYaw = 0;
@@ -140,7 +142,7 @@ public class AugmentedRealityActivity extends Activity {
             public void onProgressChanged(SeekBar seekBar, int value, boolean byUser)
             {
                 mRoll = (float) Math.toRadians(-(value - .5*seekBar.getMax()));
-                JNINative.setViewAugmentedReality(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
+                JNINative.setViewAugmentedReality(mYaw, mPitch, mRoll);
             }
 
             @Override
@@ -161,8 +163,8 @@ public class AugmentedRealityActivity extends Activity {
             @Override
             public void onProgressChanged(SeekBar seekBar, int value, boolean byUser)
             {
-                mYaw = (float) Math.toRadians(-(value - .5*seekBar.getMax()));
-                JNINative.setViewAugmentedReality(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
+                mYaw = (float) Math.toRadians(value - .5*seekBar.getMax());
+                JNINative.setViewAugmentedReality(mYaw, mPitch, mRoll);
             }
 
             @Override
@@ -184,7 +186,7 @@ public class AugmentedRealityActivity extends Activity {
             public void onProgressChanged(SeekBar seekBar, int value, boolean byUser)
             {
                 mPitch = (float) Math.toRadians(-(value - .5*seekBar.getMax()));
-                JNINative.setViewAugmentedReality(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
+                JNINative.setViewAugmentedReality(mYaw, mPitch, mRoll);
             }
 
             @Override
@@ -203,24 +205,21 @@ public class AugmentedRealityActivity extends Activity {
             @Override
             public void OnMove(float dx, float dy)
             {
-                double angle = -mYaw;
                 float f = getMoveFactor();
-                mMoveX += dx * f * Math.cos( angle ) + dy * f * Math.sin( angle );
-                mMoveY += dx * f * Math.sin( angle ) + dy * f * Math.cos( angle );
-                JNINative.setViewAugmentedReality(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
+                JNINative.moveModelAugmentedReality(f,dx,dy);
             }
 
             @Override
             public void OnRotation(float angle)
             {
-                mYaw = (float) Math.toRadians(-angle);
-                JNINative.setViewAugmentedReality(mYaw, mPitch, mRoll, mMoveX, mMoveY, mMoveZ);
+                /*mYaw = (float) Math.toRadians(-angle);
+                JNINative.setViewAugmentedReality(mYaw, mPitch, mRoll);*/
             }
 
             @Override
             public void OnZoom(float diff)
             {
-                mZoom -= diff;
+                mZoom += diff;
                 int min = 1;
                 if(mZoom < min)
                     mZoom = min;
@@ -243,7 +242,7 @@ public class AugmentedRealityActivity extends Activity {
 
             @Override
             public boolean onSingleTapUp(MotionEvent motionEvent) {
-                //JNINative.handleTouchViewer(motionEvent.getX(),motionEvent.getY());
+                JNINative.handleTouchAugmentedReality(motionEvent.getX()/mScreenSize.x,motionEvent.getY()/mScreenSize.y);
                 return false;
             }
 
@@ -351,6 +350,34 @@ public class AugmentedRealityActivity extends Activity {
         }
         mGLView.requestRender();
     }
+
+    public void showMarkerInfo(final int index) {
+        Log.d("ARActivity","SHOW MARKER INFO " + index);
+        LayoutInflater inflater = getLayoutInflater();
+        View dialogView = inflater.inflate(R.layout.dialog_show_marker,null);
+
+        TextView textView = (TextView) dialogView.findViewById(R.id.description_textbox);
+        textView.setText(markerList.get(index).getDetails());
+        textView = (TextView) dialogView.findViewById(R.id.hold_type_textbox);
+        MarkerInfo.HOLD_TYPE hold = markerList.get(index).getHoldType();
+        textView.setText(hold == null ? "" : hold.toString());
+        MarkerInfo.MOVE_TYPE move = markerList.get(index).getMoveType();
+        textView = (TextView) dialogView.findViewById(R.id.move_type_textbox);
+        textView.setText(move == null ? "" : move.toString());
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setCancelable(true).setPositiveButton("Okay", null)
+                .setNegativeButton("Delete", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        markerList.remove(index);
+                        JNINative.removeMarkerAtViewer(index);
+                    }
+                });
+        builder.setView(dialogView);
+        builder.create().show();
+    }
+
 
     public boolean isNoiseFilterOn()
     {

@@ -56,9 +56,6 @@ public class ViewerActivity extends AppCompatActivity{
 
     private GestureDetector mGestureDetector;
     private android.view.GestureDetector mTapDetector;
-    private float mMoveX = 0;
-    private float mMoveY = 0;
-    private float mMoveZ;
     private float mPitch = 0;
     private float mRoll = 0;
     private float mYaw = 0;
@@ -201,8 +198,8 @@ public class ViewerActivity extends AppCompatActivity{
             @Override
             public void OnRotation(float angle)
             {
-                mYaw = (float) Math.toRadians(-angle);
-                JNINative.setViewViewer(mYaw, mPitch, mRoll);
+                /*mYaw = (float) Math.toRadians(-angle);
+                JNINative.setViewViewer(mYaw, mPitch, mRoll);*/
             }
 
             @Override

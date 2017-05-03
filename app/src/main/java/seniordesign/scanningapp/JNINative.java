@@ -87,6 +87,8 @@ public class JNINative {
      */
     public static native void loadAugmentedReality(String fileName);
 
+    public static native void moveModelAugmentedReality(float factor, float dX, float dY);
+
 
     /**
      * Interfaces to native OnCreate function.
@@ -145,7 +147,7 @@ public class JNINative {
 
     public static native void handleTouchViewer(float x, float y);
 
-    public static native void setViewAugmentedReality(float mYaw, float mPitch, float mRoll, float mMoveX, float mMoveY, float mMoveZ);
+    public static native void setViewAugmentedReality(float mYaw, float mPitch, float mRoll);
 
     public static native void setZoomAugmentedReality(float mZoom);
 
@@ -161,4 +163,5 @@ public class JNINative {
 
     public static native void moveCameraViewer(float factor, float dX, float dY);
 
+    public static native void handleTouchAugmentedReality(float x, float y);
 }
