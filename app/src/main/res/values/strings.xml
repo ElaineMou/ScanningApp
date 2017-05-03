@@ -36,6 +36,7 @@
     <string name="difficulty_header">Difficulty:</string>
     <string name="edit_button">Edit</string>
     <string name="AR_button">AR</string>
+    <string name="file_header">File:</string>
     <string-array name="holds_array">
         <item> </item>
         <item>Crimp</item>
